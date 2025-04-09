@@ -1,4 +1,4 @@
-package com.daffa0049.motocurity.screens
+package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
@@ -32,16 +32,15 @@ import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 
 @Composable
-fun RegisterScreen(navHostController: NavHostController){
-    var email by remember { mutableStateOf("") }
+fun LoginScreen(navHostController: NavHostController){
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     Scaffold {
-        innerPadding->
+            innerPadding->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
         ){
             Card(
                 modifier = Modifier
@@ -60,13 +59,13 @@ fun RegisterScreen(navHostController: NavHostController){
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "Register",
+                        text = "Login",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
-                        )
+                    )
                     Text(
                         modifier = Modifier.padding(4.dp),
-                        text = "Put your new username, email and password to Register",
+                        text = "Use your username and password to login",
                         style = MaterialTheme.typography.bodyLarge
                     )
                     OutlinedTextField(
@@ -75,13 +74,6 @@ fun RegisterScreen(navHostController: NavHostController){
                         value = username,
                         onValueChange = {username = it},
                         label = { Text(text = "Username") }
-                    )
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        value = email,
-                        onValueChange = {email = it},
-                        label = { Text(text = "Email") }
                     )
                     OutlinedTextField(
                         modifier = Modifier
@@ -95,20 +87,20 @@ fun RegisterScreen(navHostController: NavHostController){
                             .padding(top = 16.dp)
                             .width(128.dp)
                         ,
-                        onClick = {},
+                        onClick = {navHostController.navigate("homeScreen")},
 
-                    ) {
-                        Text(text = "Register")
+                        ) {
+                        Text(text = "Login")
                     }
                     Button(
                         modifier = Modifier.padding(4.dp),
-                        onClick = {navHostController.navigate("loginScreen")},
+                        onClick = {navHostController.navigate("registerScreen")},
                         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
-                        ) {
+                    ) {
                         Text(
                             buildAnnotatedString {
-                                append("Already have an\n")
-                                append("Account? Login")
+                                append("Don't have an\n")
+                                append("Account? Register")
                             })
                     }
                 }
@@ -120,8 +112,8 @@ fun RegisterScreen(navHostController: NavHostController){
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-fun RegisterScreenPreview() {
+fun LoginScreenPreview() {
     MotocurityTheme {
-        RegisterScreen(navHostController = rememberNavController())
+        LoginScreen(navHostController = rememberNavController())
     }
 }

@@ -1,4 +1,4 @@
-package com.daffa0049.motocurity.screens
+package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
@@ -32,15 +32,16 @@ import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 
 @Composable
-fun LoginScreen(navHostController: NavHostController){
+fun RegisterScreen(navHostController: NavHostController){
+    var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     Scaffold {
-            innerPadding->
+        innerPadding->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
         ){
             Card(
                 modifier = Modifier
@@ -59,13 +60,13 @@ fun LoginScreen(navHostController: NavHostController){
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "Login",
+                        text = "Register",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
-                    )
+                        )
                     Text(
                         modifier = Modifier.padding(4.dp),
-                        text = "Use your username and password to login",
+                        text = "Put your new username, email and password to Register",
                         style = MaterialTheme.typography.bodyLarge
                     )
                     OutlinedTextField(
@@ -74,6 +75,13 @@ fun LoginScreen(navHostController: NavHostController){
                         value = username,
                         onValueChange = {username = it},
                         label = { Text(text = "Username") }
+                    )
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        value = email,
+                        onValueChange = {email = it},
+                        label = { Text(text = "Email") }
                     )
                     OutlinedTextField(
                         modifier = Modifier
@@ -87,20 +95,20 @@ fun LoginScreen(navHostController: NavHostController){
                             .padding(top = 16.dp)
                             .width(128.dp)
                         ,
-                        onClick = {},
+                        onClick = {navHostController.navigate("homeScreen")},
 
-                        ) {
-                        Text(text = "Login")
+                    ) {
+                        Text(text = "Register")
                     }
                     Button(
                         modifier = Modifier.padding(4.dp),
-                        onClick = {navHostController.navigate("registerScreen")},
+                        onClick = {navHostController.navigate("loginScreen")},
                         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
-                    ) {
+                        ) {
                         Text(
                             buildAnnotatedString {
-                                append("Don't have an\n")
-                                append("Account? Register")
+                                append("Already have an\n")
+                                append("Account? Login")
                             })
                     }
                 }
@@ -112,8 +120,8 @@ fun LoginScreen(navHostController: NavHostController){
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-fun LoginScreenPreview() {
+fun RegisterScreenPreview() {
     MotocurityTheme {
-        LoginScreen(navHostController = rememberNavController())
+        RegisterScreen(navHostController = rememberNavController())
     }
 }
