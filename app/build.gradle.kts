@@ -57,6 +57,8 @@ dependencies {
     implementation(libs.androidx.material)
     implementation(libs.ui.tooling.preview)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material.icons.extended.v160)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
