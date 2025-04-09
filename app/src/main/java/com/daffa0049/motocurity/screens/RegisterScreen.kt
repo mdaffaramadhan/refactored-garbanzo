@@ -33,7 +33,7 @@ fun RegisterScreen(navHostController: NavHostController) {
                     .wrapContentSize()
                     .align(Alignment.Center)
                     .padding(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0)) // abu-abu
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0))
             ) {
                 Column(
                     modifier = Modifier.padding(32.dp),
@@ -106,11 +106,11 @@ fun RegisterScreen(navHostController: NavHostController) {
                             .padding(top = 16.dp)
                             .width(128.dp),
                         onClick = {
-                            // Navigasi balik ke LoginScreen
+
                             navHostController.popBackStack()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
-                        border = BorderStroke(1.dp, Color.Black) // ✅ gunakan BorderStroke manual
+                        border = BorderStroke(1.dp, Color.Black)
                     ) {
                         Text("Register", color = Color.Black)
                     }
@@ -118,7 +118,7 @@ fun RegisterScreen(navHostController: NavHostController) {
 
                     Button(
                         onClick = {
-                            navHostController.popBackStack() // Kembali ke login
+                            navHostController.popBackStack()
                         },
                         modifier = Modifier
                             .width(160.dp)

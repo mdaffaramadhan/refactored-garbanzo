@@ -21,7 +21,7 @@ fun HomeScreen(onAddClick: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Motocurity", fontSize = 20.sp, color = Color.Black) // ✅ Warna teks hitam
+                    Text("Motocurity", fontSize = 20.sp, color = Color.Black)
                 },
                 navigationIcon = {
                     Icon(
@@ -30,7 +30,7 @@ fun HomeScreen(onAddClick: () -> Unit) {
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .size(24.dp),
-                        tint = Color.Black // ✅ Warna ikon hitam
+                        tint = Color.Black
                     )
                 },
                 actions = {
@@ -38,12 +38,12 @@ fun HomeScreen(onAddClick: () -> Unit) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "Profile",
-                            tint = Color.Black // ✅ Warna ikon hitam
+                            tint = Color.Black
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFE0E0E0), // ✅ Abu-abu sama seperti LoginScreen
+                    containerColor = Color(0xFFE0E0E0),
                     titleContentColor = Color.Black
                 )
             )
@@ -64,7 +64,7 @@ fun HomeScreen(onAddClick: () -> Unit) {
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Belum ada motor yang ditambahkan", color = Color.Black) // ✅ Teks isi warna hitam juga
+                Text("Belum ada motor yang ditambahkan", color = Color.Black)
             }
         }
     )
