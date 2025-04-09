@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Motorcycle
 import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,10 +17,11 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun HomeScreen(onAddClick: () -> Unit) {
     Scaffold(
+        containerColor = Color.White, // ✅ Latar belakang putih
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Motocurity", fontSize = 20.sp)
+                    Text("Motocurity", fontSize = 20.sp, color = Color.Black) // ✅ Warna teks hitam
                 },
                 navigationIcon = {
                     Icon(
@@ -29,19 +29,21 @@ fun HomeScreen(onAddClick: () -> Unit) {
                         contentDescription = "Logo",
                         modifier = Modifier
                             .padding(start = 16.dp)
-                            .size(24.dp)
+                            .size(24.dp),
+                        tint = Color.Black // ✅ Warna ikon hitam
                     )
                 },
                 actions = {
                     IconButton(onClick = { /* Profil action */ }) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Profile"
+                            contentDescription = "Profile",
+                            tint = Color.Black // ✅ Warna ikon hitam
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.LightGray,
+                    containerColor = Color(0xFFE0E0E0), // ✅ Abu-abu sama seperti LoginScreen
                     titleContentColor = Color.Black
                 )
             )
@@ -62,7 +64,7 @@ fun HomeScreen(onAddClick: () -> Unit) {
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Belum ada motor yang ditambahkan")
+                Text("Belum ada motor yang ditambahkan", color = Color.Black) // ✅ Teks isi warna hitam juga
             }
         }
     )
