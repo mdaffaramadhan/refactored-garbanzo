@@ -177,6 +177,7 @@ fun DebugNotificationButton(motorDataClass: MotorDataClass){
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("YOUR "+motorDataClass.nameMotor+"'s ALARM IS ACTIVATED")
                 .setContentText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters")
+                .setStyle(NotificationCompat.BigTextStyle().bigText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters"))
                 .setPriority(importance)
             with(NotificationManagerCompat.from(context)){
                 if (ActivityCompat.checkSelfPermission(
