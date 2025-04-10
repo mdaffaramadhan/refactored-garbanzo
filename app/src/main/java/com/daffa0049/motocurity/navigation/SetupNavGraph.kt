@@ -6,13 +6,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.ui.screens.AddMotorScreen
+import com.daffa0049.motocurity.ui.screens.EditMotorScreen
 import com.daffa0049.motocurity.ui.screens.HomeScreen
 import com.daffa0049.motocurity.ui.screens.LoginScreen
+import com.daffa0049.motocurity.ui.screens.MotorDetailScreen
 import com.daffa0049.motocurity.ui.screens.ProfileScreen
 import com.daffa0049.motocurity.ui.screens.RegisterScreen
+import com.daffa0049.motocurity.viewModel.MotorViewModel
 
 @Composable
 fun SetupNavGraph(navHostController: NavHostController = rememberNavController()){
+    val motorViewModel = MotorViewModel()
     NavHost(
         navController = navHostController,
         startDestination = Screen.LoginScreen.route
@@ -24,13 +28,19 @@ fun SetupNavGraph(navHostController: NavHostController = rememberNavController()
             RegisterScreen(navHostController = navHostController)
         }
         composable(route = Screen.HomeScreen.route){
-            HomeScreen(navHostController = navHostController)
+            HomeScreen(navHostController = navHostController, motorViewModel = motorViewModel)
         }
         composable(route = Screen.AddMotorScreen.route){
             AddMotorScreen(navHostController = navHostController)
         }
         composable(route = Screen.ProfileScreen.route){
             ProfileScreen(navHostController = navHostController)
+        }
+        composable(route = Screen.MotorDetailScreen.route){
+            MotorDetailScreen(navHostController = navHostController, motorViewModel = motorViewModel)
+        }
+        composable(route = Screen.EditMotorScreen.route){
+            EditMotorScreen(navHostController = navHostController, motorViewModel = motorViewModel)
         }
     }
 }

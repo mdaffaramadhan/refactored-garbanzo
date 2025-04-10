@@ -2,6 +2,7 @@ package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -23,8 +23,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -36,17 +36,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.daffa0049.motocurity.R
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navHostController: NavHostController) {
+fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,18 +78,20 @@ fun HomeScreen(navHostController: NavHostController) {
             }
         }
     ){innerPadding ->
-        HomeScreenContent(modifier = Modifier.padding(innerPadding))
+        HomeScreenContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel, navHostController = navHostController)
     }
 }
 
 @Composable
-fun HomeScreenContent(modifier: Modifier = Modifier){
-    val viewModel: MotorViewModel = viewModel()
-    val data = viewModel.dataDummy
-    Column {
+fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
+    val data = motorViewModel.dataDummy
+    Column(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         if(data.isEmpty()){
             Column(
-                modifier = modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -99,12 +99,20 @@ fun HomeScreenContent(modifier: Modifier = Modifier){
             }
         }
         else{
+            Text(
+                text = "List Motor",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
             LazyColumn(
-                modifier = modifier.fillMaxSize().padding(16.dp),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 84.dp)
             ) {
                 items(data){
-                    ListMotor(motorDataClass = it)
+                    ListMotor(motorDataClass = it){
+                        motorViewModel.selectedData = it
+                        navHostController.navigate("motorDetailScreen")
+                    }
                 }
             }
         }
@@ -113,9 +121,10 @@ fun HomeScreenContent(modifier: Modifier = Modifier){
 
 
 @Composable
-fun ListMotor(motorDataClass: MotorDataClass){
+fun ListMotor(motorDataClass: MotorDataClass, onCLick: () -> Unit){
     Card(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier.padding(8.dp).clickable { onCLick() },
+
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -126,12 +135,12 @@ fun ListMotor(motorDataClass: MotorDataClass){
                 modifier = Modifier.size(76.dp)
             ){
                 Image(
-                    painter = painterResource(R.drawable.ic_launcher_background),
+                    painter = painterResource(motorDataClass.picMotor),
                     contentDescription = "Tes"
                 )
             }
             Column(
-                modifier = Modifier.width(200.dp).padding(8.dp),
+                modifier = Modifier.weight(1f).padding(8.dp),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
@@ -157,9 +166,9 @@ fun ListMotor(motorDataClass: MotorDataClass){
                     lineHeight = 4.sp
                 )
             }
-            RadioButton(
-                selected = motorDataClass.isOn,
-                onClick = {}
+            Switch(
+                checked = motorDataClass.isOn,
+                onCheckedChange = {}
             )
         }
     }
@@ -170,6 +179,6 @@ fun ListMotor(motorDataClass: MotorDataClass){
 @Composable
 fun HomeScreenPreview() {
     MotocurityTheme {
-        HomeScreen(navHostController = rememberNavController())
+        HomeScreen(navHostController = rememberNavController(), MotorViewModel())
     }
 }

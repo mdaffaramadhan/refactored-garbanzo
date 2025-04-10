@@ -1,7 +1,6 @@
 package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,17 +28,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.daffa0049.motocurity.R
+import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
+import com.daffa0049.motocurity.viewModel.MotorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMotorScreen(navHostController: NavHostController){
+fun EditMotorScreen(navHostController: NavHostController, motorViewModel: MotorViewModel){
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Add Motor"
+                        text = "Edit Motor"
                     )
                 },
                 actions = {
@@ -64,17 +66,18 @@ fun AddMotorScreen(navHostController: NavHostController){
             )
         }
     ) {
-        innerPadding ->
-        AddMotorContent(modifier = Modifier.padding(innerPadding)){
-            navHostController.navigate("homeScreen")
+            innerPadding ->
+        EditMotorContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel){
+            navHostController.navigate("motorDetailScreen")
         }
     }
 }
+
 @Composable
-fun AddMotorContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
-    var nameMotor by remember { mutableStateOf("") }
-    var plateMotor by remember { mutableStateOf("") }
-    var trackerCode by remember { mutableStateOf("") }
+fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, onClick: () -> Unit){
+    var nameMotor by remember { mutableStateOf(motorViewModel.selectedData.nameMotor) }
+    var plateMotor by remember { mutableStateOf(motorViewModel.selectedData.plateNum) }
+    var trackerCode by remember { mutableStateOf(motorViewModel.selectedData.trackCode) }
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -98,24 +101,38 @@ fun AddMotorContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
                 .fillMaxWidth(),
             value = trackerCode,
             onValueChange = {trackerCode = it},
-            label = { Text(text = "Tracker Code") }
+            label = { Text(text = "Tracker Code") },
+            readOnly = true
         )
         Button(
             modifier = Modifier.padding(8.dp),
-            onClick = {onCLick()}
+            onClick = { onClick() }
         ) {
             Text(
-                text = "Submit"
+                text = "Edit"
             )
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-fun AddMotorScreenPreview() {
+fun EditMotorScreenPreview() {
+    val motorDataClass = MotorDataClass(
+        1,
+        "Vario Kabru",
+        "W 7165 XXX",
+        75,
+        picMotor = R.drawable.ic_launcher_background,
+        "123",
+        isOn = true,
+        isConnected = true
+    )
+    val motorViewModel = MotorViewModel()
+    motorViewModel.selectedData = motorDataClass
     MotocurityTheme {
-        AddMotorScreen(navHostController = rememberNavController())
+        EditMotorScreen(navHostController = rememberNavController(), motorViewModel = motorViewModel)
     }
 }

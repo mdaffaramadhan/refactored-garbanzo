@@ -6,4 +6,6 @@ sealed class Screen(val route: String) {
     data object HomeScreen: Screen("homeScreen")
     data object AddMotorScreen: Screen("addMotorScreen")
     data object ProfileScreen: Screen("profileScreen")
+    data object MotorDetailScreen: Screen("motorDetailScreen")
+    data object EditMotorScreen: Screen("editMotorScreen")
 }
