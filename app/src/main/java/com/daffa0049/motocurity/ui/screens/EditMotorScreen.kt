@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -68,7 +70,7 @@ fun EditMotorScreen(navHostController: NavHostController, motorViewModel: MotorV
     ) {
             innerPadding ->
         EditMotorContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel){
-            navHostController.navigate("motorDetailScreen")
+            navHostController.navigateUp()
         }
     }
 }
@@ -78,6 +80,10 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
     var nameMotor by remember { mutableStateOf(motorViewModel.selectedData.nameMotor) }
     var plateMotor by remember { mutableStateOf(motorViewModel.selectedData.plateNum) }
     var trackerCode by remember { mutableStateOf(motorViewModel.selectedData.trackCode) }
+
+    var nameMotorIsErr by remember { mutableStateOf(false) }
+    var plateMotorIsErr by remember { mutableStateOf(false) }
+    var trackCodeIsErr by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -87,14 +93,28 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
                 .fillMaxWidth(),
             value = nameMotor,
             onValueChange = {nameMotor = it},
-            label = { Text(text = "Name Motor") }
+            label = { Text(text = "Name Motor") },
+            isError = nameMotorIsErr,
+            supportingText = {
+                ErrorMessage(nameMotorIsErr)
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            )
         )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth(),
             value = plateMotor,
             onValueChange = {plateMotor = it},
-            label = { Text(text = "Plate Motor") }
+            label = { Text(text = "Plate Motor") },
+            isError = plateMotorIsErr,
+            supportingText = {
+                ErrorMessage(plateMotorIsErr)
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            )
         )
         OutlinedTextField(
             modifier = Modifier
@@ -102,11 +122,41 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
             value = trackerCode,
             onValueChange = {trackerCode = it},
             label = { Text(text = "Tracker Code") },
-            readOnly = true
+            isError = trackCodeIsErr,
+            supportingText = {
+                ErrorMessage(trackCodeIsErr)
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            )
         )
+
         Button(
             modifier = Modifier.padding(8.dp),
-            onClick = { onClick() }
+            onClick = {
+                nameMotorIsErr = nameMotor.isBlank()
+                plateMotorIsErr = plateMotor.isBlank()
+                trackCodeIsErr = trackerCode.isBlank()
+                if(!nameMotorIsErr && !plateMotorIsErr && !trackCodeIsErr){
+                    motorViewModel.editMotor(
+                        id = motorViewModel.selectedData.id,
+                        nameMotor = nameMotor,
+                        plateMotor = plateMotor,
+                        trackCode = trackerCode
+                    )
+                    motorViewModel.selectedData = MotorDataClass(
+                        id = motorViewModel.selectedData.id,
+                        picMotor = motorViewModel.selectedData.picMotor,
+                        battery = motorViewModel.selectedData.battery,
+                        isOn = motorViewModel.selectedData.isOn,
+                        isConnected = motorViewModel.selectedData.isConnected,
+                        nameMotor = nameMotor,
+                        plateNum = plateMotor,
+                        trackCode = trackerCode
+                        )
+                    onClick()
+                }
+            }
         ) {
             Text(
                 text = "Edit"
@@ -114,7 +164,6 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)

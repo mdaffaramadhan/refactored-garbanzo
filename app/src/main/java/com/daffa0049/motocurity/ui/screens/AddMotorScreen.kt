@@ -1,10 +1,10 @@
 package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -25,15 +25,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
+import com.daffa0049.motocurity.viewModel.MotorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddMotorScreen(navHostController: NavHostController){
+fun AddMotorScreen(navHostController: NavHostController, motorViewModel: MotorViewModel){
     Scaffold(
         topBar = {
             TopAppBar(
@@ -65,16 +67,23 @@ fun AddMotorScreen(navHostController: NavHostController){
         }
     ) {
         innerPadding ->
-        AddMotorContent(modifier = Modifier.padding(innerPadding)){
+        AddMotorContent(modifier = Modifier.padding(innerPadding), onCLick = {
+            motorViewModel.addMotor(nameMotor = it[0], plateMotor = it[1], trackCode = it[2])
             navHostController.navigate("homeScreen")
-        }
+        })
     }
 }
 @Composable
-fun AddMotorContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
+fun AddMotorContent(
+    modifier: Modifier = Modifier,
+    onCLick: (dataMotor:List<String>) -> Unit
+){
     var nameMotor by remember { mutableStateOf("") }
     var plateMotor by remember { mutableStateOf("") }
     var trackerCode by remember { mutableStateOf("") }
+    var nameMotorIsErr by remember { mutableStateOf(false) }
+    var plateMotorIsErr by remember { mutableStateOf(false) }
+    var trackerCodeIsErr by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -84,25 +93,58 @@ fun AddMotorContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
                 .fillMaxWidth(),
             value = nameMotor,
             onValueChange = {nameMotor = it},
-            label = { Text(text = "Name Motor") }
+            label = { Text(text = "Name Motor") },
+            isError = nameMotorIsErr,
+            supportingText = {
+                ErrorMessage(nameMotorIsErr)
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            )
         )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth(),
             value = plateMotor,
             onValueChange = {plateMotor = it},
-            label = { Text(text = "Plate Motor") }
+            label = { Text(text = "Plate Motor") },
+            isError = plateMotorIsErr,
+            supportingText = {
+                ErrorMessage(plateMotorIsErr)
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            )
         )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth(),
             value = trackerCode,
             onValueChange = {trackerCode = it},
-            label = { Text(text = "Tracker Code") }
+            label = { Text(text = "Tracker Code") },
+            isError = trackerCodeIsErr,
+            supportingText = {
+                ErrorMessage(trackerCodeIsErr)
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            )
         )
         Button(
             modifier = Modifier.padding(8.dp),
-            onClick = {onCLick()}
+            onClick = {
+                nameMotorIsErr = nameMotor.isBlank()
+                plateMotorIsErr = plateMotor.isBlank()
+                trackerCodeIsErr = trackerCode.isBlank()
+                if(!nameMotorIsErr && !plateMotorIsErr && !trackerCodeIsErr){
+                    val dataToAdd = listOf(
+                        nameMotor,
+                        plateMotor,
+                        trackerCode
+                    )
+                    onCLick(dataToAdd)
+                }
+            }
         ) {
             Text(
                 text = "Submit"
@@ -110,12 +152,19 @@ fun AddMotorContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
         }
     }
 }
-
+@Composable
+fun ErrorMessage(isError: Boolean){
+    if(isError){
+        Text(
+            text = "Please fill the data correctly",
+            )
+    }
+}
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun AddMotorScreenPreview() {
     MotocurityTheme {
-        AddMotorScreen(navHostController = rememberNavController())
+        AddMotorScreen(navHostController = rememberNavController(), MotorViewModel())
     }
 }

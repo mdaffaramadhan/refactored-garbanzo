@@ -1,5 +1,7 @@
 package com.daffa0049.motocurity.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,6 +16,7 @@ import com.daffa0049.motocurity.ui.screens.ProfileScreen
 import com.daffa0049.motocurity.ui.screens.RegisterScreen
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun SetupNavGraph(navHostController: NavHostController = rememberNavController()){
     val motorViewModel = MotorViewModel()
@@ -31,7 +34,7 @@ fun SetupNavGraph(navHostController: NavHostController = rememberNavController()
             HomeScreen(navHostController = navHostController, motorViewModel = motorViewModel)
         }
         composable(route = Screen.AddMotorScreen.route){
-            AddMotorScreen(navHostController = navHostController)
+            AddMotorScreen(navHostController = navHostController, motorViewModel = motorViewModel)
         }
         composable(route = Screen.ProfileScreen.route){
             ProfileScreen(navHostController = navHostController)

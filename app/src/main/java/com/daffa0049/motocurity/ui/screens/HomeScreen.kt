@@ -1,5 +1,6 @@
 package com.daffa0049.motocurity.ui.screens
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -82,20 +84,21 @@ fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewMo
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
-    val data = motorViewModel.dataDummy
+    val data = motorViewModel.dataDummy.collectAsState()
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        if(data.isEmpty()){
+        if(data.value.isEmpty()){
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("Belum ada motor yang ditambahkan")
+                Text("No motor is added yet.")
             }
         }
         else{
@@ -108,11 +111,15 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 84.dp)
             ) {
-                items(data){
-                    ListMotor(motorDataClass = it){
-                        motorViewModel.selectedData = it
-                        navHostController.navigate("motorDetailScreen")
-                    }
+                items(data.value){
+                    ListMotor(
+                        motorDataClass = it,
+                        onCLick = {
+                            motorViewModel.selectedData = it
+                            navHostController.navigate("motorDetailScreen")
+                        },
+                        motorViewModel = motorViewModel
+                        )
                 }
             }
         }
@@ -121,7 +128,11 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
 
 
 @Composable
-fun ListMotor(motorDataClass: MotorDataClass, onCLick: () -> Unit){
+fun ListMotor(
+    motorDataClass: MotorDataClass,
+    motorViewModel: MotorViewModel,
+    onCLick: () -> Unit
+){
     Card(
         modifier = Modifier.padding(8.dp).clickable { onCLick() },
 
@@ -168,7 +179,7 @@ fun ListMotor(motorDataClass: MotorDataClass, onCLick: () -> Unit){
             }
             Switch(
                 checked = motorDataClass.isOn,
-                onCheckedChange = {}
+                onCheckedChange = {motorViewModel.switchActionForIsOn(motorDataClass)}
             )
         }
     }

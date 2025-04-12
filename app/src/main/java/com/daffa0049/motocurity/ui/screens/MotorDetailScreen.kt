@@ -111,7 +111,10 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = data.plateNum + " " + data.battery + "%"
+            text = "${data.plateNum} ${data.battery} %"
+        )
+        Text(
+            text = "Track Code: ${data.trackCode}"
         )
         Box(
             modifier = Modifier.size(125.dp)
@@ -139,7 +142,7 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
                 )
                 Switch(
                     checked = data.isOn,
-                    onCheckedChange = {}
+                    onCheckedChange = {motorViewModel.switchActionForIsOn(motorViewModel.selectedData)}
                 )
             }
         }
@@ -148,6 +151,15 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
         ) {
             Text(
                 text = "Edit"
+            )
+        }
+
+        Button(
+            onClick = {onClick()},
+            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+        ) {
+            Text(
+                text = "Delete"
             )
         }
 
@@ -167,7 +179,7 @@ fun DebugNotificationButton(motorDataClass: MotorDataClass){
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
                 val channelName = "Motor Alarm"
                 val descriptionText = "Notification if your motorcycle is moving for a few meters"
-                importance = NotificationManager.IMPORTANCE_DEFAULT
+                importance = NotificationManager.IMPORTANCE_HIGH
                 val mChannel = NotificationChannel("MOTOR_ALARM", channelName, importance)
                 mChannel.description = descriptionText
                 val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
