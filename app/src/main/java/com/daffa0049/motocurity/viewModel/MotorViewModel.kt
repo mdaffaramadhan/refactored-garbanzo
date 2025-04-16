@@ -1,14 +1,10 @@
 package com.daffa0049.motocurity.viewModel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.daffa0049.motocurity.R
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 
 class MotorViewModel:ViewModel() {
     private val _dataDummy = MutableStateFlow<List<MotorDataClass>>(
@@ -46,7 +42,7 @@ class MotorViewModel:ViewModel() {
         )
     )
     val dataDummy = _dataDummy.asStateFlow()
-    var selectedData by mutableStateOf<MotorDataClass>(
+    private val _selectedData = MutableStateFlow<MotorDataClass>(
         MotorDataClass(
             0,
             "",
@@ -59,9 +55,11 @@ class MotorViewModel:ViewModel() {
         )
     )
 
+    val selectedData = _selectedData.asStateFlow()
+
     fun addMotor(nameMotor: String, plateMotor: String, trackCode: String){
         _dataDummy.value += MotorDataClass(
-            id = dataDummy.value.last().id+1,
+            id = _dataDummy.value.size.toLong(),
             nameMotor = nameMotor,
             plateNum = plateMotor,
             trackCode = trackCode,
@@ -83,9 +81,18 @@ class MotorViewModel:ViewModel() {
     fun deleteMotor(item: MotorDataClass){
         _dataDummy.value -= item
     }
-    fun switchActionForIsOn(item: MotorDataClass){
+    fun switchActionForList(item: MotorDataClass){
         _dataDummy.value = _dataDummy.value.map {
             if(it.id == item.id) it.copy(isOn = !item.isOn) else it
         }
+    }
+
+    fun selectData(item: MotorDataClass){
+        _selectedData.value = item
+    }
+
+    fun switchActionForDetail(item: MotorDataClass){
+        _selectedData.value = _selectedData.value.copy(isOn = !item.isOn)
+        switchActionForList(item)
     }
 }

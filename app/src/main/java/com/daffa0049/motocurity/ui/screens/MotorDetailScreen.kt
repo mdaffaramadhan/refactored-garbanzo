@@ -35,6 +35,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +56,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.R
+import com.daffa0049.motocurity.component.DeleteDialog
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
@@ -90,37 +96,35 @@ fun MotorDetailScreen(navHostController: NavHostController, motorViewModel: Moto
         }
     ) {
             innerPadding ->
-        MotorDetailContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel){
-            navHostController.navigate("editMotorScreen")
-        }
+        MotorDetailContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel, navHostController = navHostController)
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
-fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, onClick: () -> Unit){
-    val data = motorViewModel.selectedData
+fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
+    val data = motorViewModel.selectedData.collectAsState()
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = data.nameMotor,
+            text = data.value.nameMotor,
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "${data.plateNum} ${data.battery} %"
+            text = "${data.value.plateNum} ${data.value.battery} %"
         )
         Text(
-            text = "Track Code: ${data.trackCode}"
+            text = "Track Code: ${data.value.trackCode}"
         )
         Box(
             modifier = Modifier.size(125.dp)
         ){
             Image(
-                painter = painterResource(data.picMotor),
+                painter = painterResource(data.value.picMotor),
                 contentDescription = "Picture of user's motor",
                 contentScale = ContentScale.FillHeight
             )
@@ -141,29 +145,22 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
                     fontWeight = FontWeight.Bold
                 )
                 Switch(
-                    checked = data.isOn,
-                    onCheckedChange = {motorViewModel.switchActionForIsOn(motorViewModel.selectedData)}
+                    checked = data.value.isOn,
+                    onCheckedChange = {motorViewModel.switchActionForDetail(data.value)}
                 )
             }
         }
         Button(
-            onClick = {onClick()}
+            onClick = {navHostController.navigate("editMotorScreen")}
         ) {
             Text(
                 text = "Edit"
             )
         }
 
-        Button(
-            onClick = {onClick()},
-            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
-        ) {
-            Text(
-                text = "Delete"
-            )
-        }
+        ShowDeleteDialog(motorDataClass = data.value, motorViewModel = motorViewModel, navHostController = navHostController)
 
-        DebugNotificationButton(motorDataClass = motorViewModel.selectedData)
+        DebugNotificationButton(motorDataClass = data.value)
     }
 }
 
@@ -171,8 +168,7 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
 @Composable
 fun DebugNotificationButton(motorDataClass: MotorDataClass){
     val context = LocalContext.current
-
-    var importance = NotificationManager.IMPORTANCE_DEFAULT
+    var importance = NotificationManager.IMPORTANCE_MAX
 
     Button(
         onClick = {
@@ -191,6 +187,8 @@ fun DebugNotificationButton(motorDataClass: MotorDataClass){
                 .setContentText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters")
                 .setStyle(NotificationCompat.BigTextStyle().bigText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters"))
                 .setPriority(importance)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
             with(NotificationManagerCompat.from(context)){
                 if (ActivityCompat.checkSelfPermission(
                         context,
@@ -229,6 +227,30 @@ fun RequestNotificationPermission(){
    }
 }
 
+@Composable
+fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewModel, navHostController: NavHostController){
+    var showDialog by remember { mutableStateOf(false) }
+    Button(
+        onClick = {showDialog = true},
+        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
+    ) {
+        Text(
+            text = "Delete"
+        )
+    }
+    if(showDialog){
+        DeleteDialog(
+            title = "Delete ${motorDataClass.nameMotor}",
+            message = "Are you sure you want to delete this data?",
+            onDelete = {
+                motorViewModel.deleteMotor(motorDataClass)
+                navHostController.navigateUp()
+                       },
+            onDismiss = { showDialog = false }
+        )
+    }
+}
+
 @RequiresApi(Build.VERSION_CODES.N)
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
@@ -245,7 +267,7 @@ fun DetailMotorScreenPreview() {
         isConnected = true
     )
     val motorViewModel = MotorViewModel()
-    motorViewModel.selectedData = motorDataClass
+    motorViewModel.selectData(motorDataClass)
     MotocurityTheme {
         MotorDetailScreen(navHostController = rememberNavController(), motorViewModel)
     }

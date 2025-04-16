@@ -115,7 +115,7 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
                     ListMotor(
                         motorDataClass = it,
                         onCLick = {
-                            motorViewModel.selectedData = it
+                            motorViewModel.selectData(it)
                             navHostController.navigate("motorDetailScreen")
                         },
                         motorViewModel = motorViewModel
@@ -179,7 +179,7 @@ fun ListMotor(
             }
             Switch(
                 checked = motorDataClass.isOn,
-                onCheckedChange = {motorViewModel.switchActionForIsOn(motorDataClass)}
+                onCheckedChange = {motorViewModel.switchActionForList(motorDataClass)}
             )
         }
     }

@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,9 +78,11 @@ fun EditMotorScreen(navHostController: NavHostController, motorViewModel: MotorV
 
 @Composable
 fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, onClick: () -> Unit){
-    var nameMotor by remember { mutableStateOf(motorViewModel.selectedData.nameMotor) }
-    var plateMotor by remember { mutableStateOf(motorViewModel.selectedData.plateNum) }
-    var trackerCode by remember { mutableStateOf(motorViewModel.selectedData.trackCode) }
+    val data = motorViewModel.selectedData.collectAsState()
+
+    var nameMotor by remember { mutableStateOf(data.value.nameMotor) }
+    var plateMotor by remember { mutableStateOf(data.value.plateNum) }
+    var trackerCode by remember { mutableStateOf(data.value.trackCode) }
 
     var nameMotorIsErr by remember { mutableStateOf(false) }
     var plateMotorIsErr by remember { mutableStateOf(false) }
@@ -139,21 +142,24 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
                 trackCodeIsErr = trackerCode.isBlank()
                 if(!nameMotorIsErr && !plateMotorIsErr && !trackCodeIsErr){
                     motorViewModel.editMotor(
-                        id = motorViewModel.selectedData.id,
+                        id = data.value.id,
                         nameMotor = nameMotor,
                         plateMotor = plateMotor,
                         trackCode = trackerCode
                     )
-                    motorViewModel.selectedData = MotorDataClass(
-                        id = motorViewModel.selectedData.id,
-                        picMotor = motorViewModel.selectedData.picMotor,
-                        battery = motorViewModel.selectedData.battery,
-                        isOn = motorViewModel.selectedData.isOn,
-                        isConnected = motorViewModel.selectedData.isConnected,
-                        nameMotor = nameMotor,
-                        plateNum = plateMotor,
-                        trackCode = trackerCode
+
+                    motorViewModel.selectData(
+                        MotorDataClass(
+                            id = data.value.id,
+                            nameMotor = nameMotor,
+                            plateNum = plateMotor,
+                            battery = data.value.battery,
+                            picMotor = data.value.picMotor,
+                            trackCode = trackerCode,
+                            isOn = data.value.isOn,
+                            isConnected = data.value.isOn
                         )
+                    )
                     onClick()
                 }
             }
@@ -180,7 +186,7 @@ fun EditMotorScreenPreview() {
         isConnected = true
     )
     val motorViewModel = MotorViewModel()
-    motorViewModel.selectedData = motorDataClass
+    motorViewModel.selectData(motorDataClass)
     MotocurityTheme {
         EditMotorScreen(navHostController = rememberNavController(), motorViewModel = motorViewModel)
     }
