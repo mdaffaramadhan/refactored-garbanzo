@@ -95,4 +95,14 @@ class MotorViewModel:ViewModel() {
         _selectedData.value = _selectedData.value.copy(isOn = !item.isOn)
         switchActionForList(item)
     }
+
+    fun editDistanceToACtivate(id: Long, newDistance: Long){
+        _dataDummy.value = _dataDummy.value.map {
+            if(it.id == id){
+                _selectedData.value = _selectedData.value.copy(distanceToActivate = newDistance)
+                it.copy(distanceToActivate = newDistance)
+            }
+            else it
+        }
+    }
 }

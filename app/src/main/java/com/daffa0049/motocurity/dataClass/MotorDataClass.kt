@@ -8,5 +8,6 @@ data class MotorDataClass(
     val picMotor: Int,
     val trackCode: String,
     val isOn: Boolean,
-    val isConnected: Boolean
+    val isConnected: Boolean,
+    val distanceToActivate: Long = 10
 )

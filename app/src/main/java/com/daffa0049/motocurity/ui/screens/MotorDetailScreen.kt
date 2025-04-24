@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -28,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,6 +49,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -104,6 +108,10 @@ fun MotorDetailScreen(navHostController: NavHostController, motorViewModel: Moto
 @Composable
 fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
     val data = motorViewModel.selectedData.collectAsState()
+    var distanceToActivate by remember { mutableStateOf(data.value.distanceToActivate.toString()) }
+    var distanceIsErr by remember { mutableStateOf(false) }
+    var distanceIsActive by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -148,6 +156,59 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
                     checked = data.value.isOn,
                     onCheckedChange = {motorViewModel.switchActionForDetail(data.value)}
                 )
+            }
+        }
+        Card(
+            modifier = Modifier.fillMaxWidth()
+        )
+        {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = distanceToActivate,
+                    onValueChange = {distanceToActivate = it},
+                    label = { Text(text = "Distance to activate alarm") },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
+                    isError = distanceIsErr,
+                    supportingText = {
+                        ErrorMessage(distanceIsErr)
+                    },
+                    enabled = distanceIsActive
+                )
+                Button(
+                    onClick = {
+                        if(distanceIsActive){
+                            distanceIsErr = distanceToActivate.isEmpty()
+                            if(!distanceIsErr){
+                                motorViewModel.editDistanceToACtivate(data.value.id, distanceToActivate.toLong())
+                                distanceIsActive = false
+                            }
+                        }
+                        else{
+                            distanceIsActive = true
+                        }
+                    }
+                ) {
+                    Text(
+                        text = (
+                                if (distanceIsActive) {
+                                    "Save"
+                                }
+                                else {
+                                    "Edit"
+                                }
+                                )
+                    )
+                }
             }
         }
         Button(
