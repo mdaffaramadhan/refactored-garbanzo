@@ -153,10 +153,10 @@ fun AddMotorContent(
     }
 }
 @Composable
-fun ErrorMessage(isError: Boolean){
+fun ErrorMessage(isError: Boolean, message: String = "Please fill the data correctly"){
     if(isError){
         Text(
-            text = "Please fill the data correctly",
+            text = message,
             )
     }
 }

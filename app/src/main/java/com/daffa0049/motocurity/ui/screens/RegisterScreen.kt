@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -36,6 +38,9 @@ fun RegisterScreen(navHostController: NavHostController){
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var usernameIsError by remember { mutableStateOf(false) }
+    var emailIsError by remember { mutableStateOf(false) }
+    var passwordIsError by remember { mutableStateOf(false) }
     Scaffold {
         innerPadding->
         Box(
@@ -74,28 +79,56 @@ fun RegisterScreen(navHostController: NavHostController){
                             .fillMaxWidth(),
                         value = username,
                         onValueChange = {username = it},
-                        label = { Text(text = "Username") }
+                        label = { Text(text = "Username") },
+                        isError = usernameIsError,
+                        supportingText = {
+                            ErrorMessage(usernameIsError, "Fill the username")
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth(),
                         value = email,
                         onValueChange = {email = it},
-                        label = { Text(text = "Email") }
+                        label = { Text(text = "Email") },
+                        isError = emailIsError,
+                        supportingText = {
+                            ErrorMessage(emailIsError, "Fill the email")
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth(),
                         value = password,
                         onValueChange = {password = it},
-                        label = { Text(text = "Password") }
+                        label = { Text(text = "Password") },
+                        isError = passwordIsError,
+                        supportingText = {
+                            ErrorMessage(passwordIsError, "Fill the password")
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done
+                        )
                     )
                     Button(
                         modifier = Modifier
                             .padding(top = 16.dp)
                             .width(128.dp)
                         ,
-                        onClick = {navHostController.navigate("homeScreen")},
+                        onClick = {
+                            usernameIsError = username.isBlank()
+                            emailIsError = email.isBlank()
+                            passwordIsError = password.isBlank()
+                            if(!usernameIsError && !emailIsError && !passwordIsError){
+                                navHostController.navigate("homeScreen")
+                            }
+                                  },
 
                     ) {
                         Text(text = "Register")
