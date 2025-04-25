@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -111,6 +112,7 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
     var distanceToActivate by remember { mutableStateOf(data.value.distanceToActivate.toString()) }
     var distanceIsErr by remember { mutableStateOf(false) }
     var distanceIsActive by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -182,7 +184,10 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
                     supportingText = {
                         ErrorMessage(distanceIsErr)
                     },
-                    enabled = distanceIsActive
+                    enabled = distanceIsActive,
+                    trailingIcon = {
+                        Text("Meters")
+                    }
                 )
                 Button(
                     onClick = {
@@ -191,6 +196,7 @@ fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewM
                             if(!distanceIsErr){
                                 motorViewModel.editDistanceToACtivate(data.value.id, distanceToActivate.toLong())
                                 distanceIsActive = false
+                                Toast.makeText(context, "Distance to activate the alarm is $distanceToActivate meters now", Toast.LENGTH_SHORT).show()
                             }
                         }
                         else{

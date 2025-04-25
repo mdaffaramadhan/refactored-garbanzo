@@ -1,6 +1,7 @@
 package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -84,6 +86,8 @@ fun AddMotorContent(
     var nameMotorIsErr by remember { mutableStateOf(false) }
     var plateMotorIsErr by remember { mutableStateOf(false) }
     var trackerCodeIsErr by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -142,6 +146,7 @@ fun AddMotorContent(
                         plateMotor,
                         trackerCode
                     )
+                    Toast.makeText(context, "Create Succesfull!", Toast.LENGTH_SHORT).show()
                     onCLick(dataToAdd)
                 }
             }
