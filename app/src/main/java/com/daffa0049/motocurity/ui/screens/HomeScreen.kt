@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,17 +44,26 @@ import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
+import com.google.firebase.auth.FirebaseAuth
 
-const val KEY_ID_USER = "idUser"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewModel, id:String?) {
+fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewModel) {
+    val user = FirebaseAuth.getInstance().currentUser
+
+    LaunchedEffect(Unit) {
+        if (user == null) {
+            navHostController.navigate("loginScreen") {
+                popUpTo("homeScreen") { inclusive = true } // Prevent back navigation
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Motocurity${id}"
+                        "Motocurity"
                     )
                 },
 //                navigationIcon = {
@@ -191,6 +201,6 @@ fun ListMotor(
 @Composable
 fun HomeScreenPreview() {
     MotocurityTheme {
-        HomeScreen(navHostController = rememberNavController(), MotorViewModel(), KEY_ID_USER)
+        HomeScreen(navHostController = rememberNavController(), MotorViewModel())
     }
 }

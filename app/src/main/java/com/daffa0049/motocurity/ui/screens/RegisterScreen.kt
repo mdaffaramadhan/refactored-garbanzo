@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.daffa0049.motocurity.db.Auth
+import com.daffa0049.motocurity.db.AuthViewModel
 import com.daffa0049.motocurity.navigation.Screen
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 
@@ -135,13 +135,13 @@ fun RegisterScreen(navHostController: NavHostController){
                             emailIsError = email.isBlank()
                             passwordIsError = password.isBlank()
                             if(!usernameIsError && !emailIsError && !passwordIsError){
-                                Auth().registerUser(
+                                AuthViewModel().registerUser(
                                     email,
                                     password,
                                     username,
                                     onSuccess = {uid->
                                         Toast.makeText(context, "Register Successful", Toast.LENGTH_SHORT).show()
-                                        navHostController.navigate(Screen.HomeScreen.withId(id = uid))
+                                        navHostController.navigate(Screen.HomeScreen.route)
                                     },
                                     onError = {message->
                                         registerIsError = true

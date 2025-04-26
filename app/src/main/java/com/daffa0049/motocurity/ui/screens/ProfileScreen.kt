@@ -1,6 +1,7 @@
 package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,18 +31,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.R
+import com.daffa0049.motocurity.db.AuthViewModel
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navHostController: NavHostController){
+    val context = LocalContext.current
+    val user = FirebaseAuth.getInstance().currentUser
+
+    LaunchedEffect(Unit) {
+        if (user == null) {
+            navHostController.navigate("loginScreen") {
+                popUpTo("profileScreen") { inclusive = true } // Prevent back navigation
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -65,14 +79,17 @@ fun ProfileScreen(navHostController: NavHostController){
     ) {
             innerPadding ->
         ProfileContent(modifier = Modifier.padding(innerPadding)){
+            AuthViewModel().logOut()
+            Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
             navHostController.navigate("loginScreen")
         }
     }
 }
 @Composable
 fun ProfileContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
+    var username by remember { mutableStateOf(auth.currentUser?.displayName ?: "") }
+    var email by remember { mutableStateOf(auth.currentUser?.email ?: "") }
     var isEdit by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.padding(16.dp).fillMaxSize(),
@@ -105,7 +122,10 @@ fun ProfileContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
         if(isEdit){
             Button(
                 modifier = Modifier.padding(8.dp),
-                onClick = {isEdit = false},
+                onClick = {
+                    AuthViewModel().updateUsername(username)
+                    isEdit = false
+                          },
                 colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
             ) {
                 Text(
