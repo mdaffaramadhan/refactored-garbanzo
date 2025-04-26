@@ -44,15 +44,16 @@ import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 
+const val KEY_ID_USER = "idUser"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewModel) {
+fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewModel, id:String?) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Motocurity"
+                        "Motocurity${id}"
                     )
                 },
 //                navigationIcon = {
@@ -190,6 +191,6 @@ fun ListMotor(
 @Composable
 fun HomeScreenPreview() {
     MotocurityTheme {
-        HomeScreen(navHostController = rememberNavController(), MotorViewModel())
+        HomeScreen(navHostController = rememberNavController(), MotorViewModel(), KEY_ID_USER)
     }
 }

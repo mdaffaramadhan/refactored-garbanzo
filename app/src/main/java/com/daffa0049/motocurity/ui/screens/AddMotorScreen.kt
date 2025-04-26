@@ -162,6 +162,7 @@ fun ErrorMessage(isError: Boolean, message: String = "Please fill the data corre
     if(isError){
         Text(
             text = message,
+            color = MaterialTheme.colorScheme.error
             )
     }
 }

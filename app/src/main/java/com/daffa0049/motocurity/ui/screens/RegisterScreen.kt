@@ -1,6 +1,7 @@
 package com.daffa0049.motocurity.ui.screens
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -31,6 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.daffa0049.motocurity.db.Auth
+import com.daffa0049.motocurity.navigation.Screen
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 
 @Composable
@@ -41,6 +45,10 @@ fun RegisterScreen(navHostController: NavHostController){
     var usernameIsError by remember { mutableStateOf(false) }
     var emailIsError by remember { mutableStateOf(false) }
     var passwordIsError by remember { mutableStateOf(false) }
+    var registerIsError by remember { mutableStateOf(false) }
+    var registerErrMessage by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
     Scaffold {
         innerPadding->
         Box(
@@ -116,6 +124,7 @@ fun RegisterScreen(navHostController: NavHostController){
                             imeAction = ImeAction.Done
                         )
                     )
+                    ErrorMessage(isError = registerIsError, message = registerErrMessage)
                     Button(
                         modifier = Modifier
                             .padding(top = 16.dp)
@@ -126,7 +135,19 @@ fun RegisterScreen(navHostController: NavHostController){
                             emailIsError = email.isBlank()
                             passwordIsError = password.isBlank()
                             if(!usernameIsError && !emailIsError && !passwordIsError){
-                                navHostController.navigate("homeScreen")
+                                Auth().registerUser(
+                                    email,
+                                    password,
+                                    username,
+                                    onSuccess = {uid->
+                                        Toast.makeText(context, "Register Successful", Toast.LENGTH_SHORT).show()
+                                        navHostController.navigate(Screen.HomeScreen.withId(id = uid))
+                                    },
+                                    onError = {message->
+                                        registerIsError = true
+                                        registerErrMessage = message
+                                    }
+                                )
                             }
                                   },
 
