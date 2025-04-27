@@ -49,7 +49,7 @@ class AuthViewModel:ViewModel() {
 
     fun updateUsername(
         username: String,
-        onSuccess: (String) -> Unit = {},
+        onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {}
     ){
         val auth = FirebaseAuth.getInstance().currentUser
@@ -57,7 +57,11 @@ class AuthViewModel:ViewModel() {
             .setDisplayName(username)
             .build()
 
-        auth?.updateProfile(profileUpdates)
+        auth?.updateProfile(profileUpdates)?.addOnCompleteListener {
+            onSuccess()
+        }?.addOnFailureListener {e->
+            onError(e.message.toString())
+        }
     }
 
 

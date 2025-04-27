@@ -32,12 +32,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMotorScreen(navHostController: NavHostController, motorViewModel: MotorViewModel){
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,15 +72,27 @@ fun AddMotorScreen(navHostController: NavHostController, motorViewModel: MotorVi
     ) {
         innerPadding ->
         AddMotorContent(modifier = Modifier.padding(innerPadding), onCLick = {
-            motorViewModel.addMotor(nameMotor = it[0], plateMotor = it[1], trackCode = it[2])
-            navHostController.navigate("homeScreen")
+            motorViewModel.createMotor(
+                it.nameMotor,
+                it.plateNum,
+                it.trackCode,
+                onSuccess = {
+                    motorViewModel.addMotor(it.nameMotor, it.plateNum, it.plateNum)
+                    Toast.makeText(context, "Create Successful!", Toast.LENGTH_SHORT).show()
+                    navHostController.popBackStack()
+                },
+                onError = {e->
+                    Toast.makeText(context, e, Toast.LENGTH_SHORT).show()
+                }
+            )
+
         })
     }
 }
 @Composable
 fun AddMotorContent(
     modifier: Modifier = Modifier,
-    onCLick: (dataMotor:List<String>) -> Unit
+    onCLick: (dataMotor: MotorDataClass) -> Unit
 ){
     var nameMotor by remember { mutableStateOf("") }
     var plateMotor by remember { mutableStateOf("") }
@@ -87,7 +101,6 @@ fun AddMotorContent(
     var plateMotorIsErr by remember { mutableStateOf(false) }
     var trackerCodeIsErr by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
     Column(
         modifier = modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -141,13 +154,12 @@ fun AddMotorContent(
                 plateMotorIsErr = plateMotor.isBlank()
                 trackerCodeIsErr = trackerCode.isBlank()
                 if(!nameMotorIsErr && !plateMotorIsErr && !trackerCodeIsErr){
-                    val dataToAdd = listOf(
-                        nameMotor,
-                        plateMotor,
-                        trackerCode
+                    val dataMotor = MotorDataClass(
+                        nameMotor = nameMotor,
+                        plateNum = plateMotor,
+                        trackCode = trackerCode
                     )
-                    Toast.makeText(context, "Create Succesfull!", Toast.LENGTH_SHORT).show()
-                    onCLick(dataToAdd)
+                    onCLick(dataMotor)
                 }
             }
         ) {

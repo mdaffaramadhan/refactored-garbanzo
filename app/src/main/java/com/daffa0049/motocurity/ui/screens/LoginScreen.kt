@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.db.AuthViewModel
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(navHostController: NavHostController){
@@ -46,6 +48,16 @@ fun LoginScreen(navHostController: NavHostController){
     var loginErrMessage by remember { mutableStateOf("") }
 
     val context = LocalContext.current
+
+    val user = FirebaseAuth.getInstance().currentUser
+
+    LaunchedEffect(Unit) {
+        if (user != null) {
+            navHostController.navigate("homeScreen") {
+                popUpTo("LoginScreen") { inclusive = true } // Prevent back navigation
+            }
+        }
+    }
     Scaffold {
             innerPadding->
         Box(

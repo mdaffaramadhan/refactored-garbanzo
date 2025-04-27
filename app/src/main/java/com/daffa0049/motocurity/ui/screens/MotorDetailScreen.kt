@@ -324,12 +324,12 @@ fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewMo
 @Composable
 fun DetailMotorScreenPreview() {
     val motorDataClass = MotorDataClass(
-        1,
-        "Vario Kabru",
-        "W 7165 XXX",
-        75,
+        id = "",
+        nameMotor = "Vario Kabru",
+        plateNum = "W 7165 XXX",
+        userUid = "UtMFe95ENEYWnJvUvS6odEgKQEQ2",
         picMotor = R.drawable.ic_launcher_background,
-        "123",
+        trackCode = "123",
         isOn = true,
         isConnected = true
     )

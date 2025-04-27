@@ -37,6 +37,7 @@ import com.daffa0049.motocurity.R
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,7 +162,8 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
                             picMotor = data.value.picMotor,
                             trackCode = trackerCode,
                             isOn = data.value.isOn,
-                            isConnected = data.value.isOn
+                            isConnected = data.value.isOn,
+                            userUid = FirebaseAuth.getInstance().currentUser?.uid
                         )
                     )
                     Toast.makeText(context, "Edit Succesfull!", Toast.LENGTH_SHORT).show()
@@ -181,12 +183,12 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
 @Composable
 fun EditMotorScreenPreview() {
     val motorDataClass = MotorDataClass(
-        1,
-        "Vario Kabru",
-        "W 7165 XXX",
-        75,
+        id = "",
+        nameMotor = "Vario Kabru",
+        plateNum = "W 7165 XXX",
+        userUid = "UtMFe95ENEYWnJvUvS6odEgKQEQ2",
         picMotor = R.drawable.ic_launcher_background,
-        "123",
+        trackCode = "123",
         isOn = true,
         isConnected = true
     )
