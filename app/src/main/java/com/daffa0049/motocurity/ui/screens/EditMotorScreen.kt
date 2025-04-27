@@ -37,7 +37,6 @@ import com.daffa0049.motocurity.R
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
-import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,24 +149,32 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
                         id = data.value.id,
                         nameMotor = nameMotor,
                         plateMotor = plateMotor,
-                        trackCode = trackerCode
+                        trackCode = trackerCode,
+                        onSuccess = {
+                            motorViewModel.getMotorById(id = data.value.id)
+                            Toast.makeText(context, "Edit Successful!", Toast.LENGTH_SHORT).show()
+                            onClick()
+                        },
+                        onError = {
+                            Toast.makeText(context, "Edit Failed!", Toast.LENGTH_SHORT).show()
+                        }
                     )
 
-                    motorViewModel.selectData(
-                        MotorDataClass(
-                            id = data.value.id,
-                            nameMotor = nameMotor,
-                            plateNum = plateMotor,
-                            battery = data.value.battery,
-                            picMotor = data.value.picMotor,
-                            trackCode = trackerCode,
-                            isOn = data.value.isOn,
-                            isConnected = data.value.isOn,
-                            userUid = FirebaseAuth.getInstance().currentUser?.uid
-                        )
-                    )
-                    Toast.makeText(context, "Edit Succesfull!", Toast.LENGTH_SHORT).show()
-                    onClick()
+//                    motorViewModel.selectData(
+//                        MotorDataClass(
+//                            id = data.value.id,
+//                            nameMotor = nameMotor,
+//                            plateNum = plateMotor,
+//                            battery = data.value.battery,
+//                            picMotor = data.value.picMotor,
+//                            trackCode = trackerCode,
+//                            isOn = data.value.isOn,
+//                            isConnected = data.value.isOn,
+//                            userUid = FirebaseAuth.getInstance().currentUser?.uid
+//                        )
+//                    )
+//                    Toast.makeText(context, "Edit Successful!", Toast.LENGTH_SHORT).show()
+
                 }
             }
         ) {

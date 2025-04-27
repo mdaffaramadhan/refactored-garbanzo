@@ -2,6 +2,7 @@ package com.daffa0049.motocurity.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -98,7 +100,17 @@ fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewMo
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
+
+    val context = LocalContext.current
+
     val data = motorViewModel.dataDummy.collectAsState()
+
+    LaunchedEffect(Unit) {
+        motorViewModel.getMotor(){e->
+            Toast.makeText(context, e, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -126,7 +138,7 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
                     ListMotor(
                         motorDataClass = it,
                         onCLick = {
-                            motorViewModel.selectData(it)
+                            motorViewModel.getMotorById(it.id)
                             navHostController.navigate("motorDetailScreen")
                         },
                         motorViewModel = motorViewModel

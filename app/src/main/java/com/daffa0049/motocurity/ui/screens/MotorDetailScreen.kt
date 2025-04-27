@@ -101,15 +101,24 @@ fun MotorDetailScreen(navHostController: NavHostController, motorViewModel: Moto
         }
     ) {
             innerPadding ->
-        MotorDetailContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel, navHostController = navHostController)
+        MotorDetailContent(
+            modifier = Modifier.padding(innerPadding),
+            motorViewModel = motorViewModel,
+            navHostController = navHostController
+        )
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
-fun MotorDetailContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
+fun MotorDetailContent(
+    modifier: Modifier = Modifier,
+    motorViewModel: MotorViewModel,
+    navHostController: NavHostController
+){
     val data = motorViewModel.selectedData.collectAsState()
-    var distanceToActivate by remember { mutableStateOf(data.value.distanceToActivate.toString()) }
+    var distanceToActivate by remember(data.value.id)
+    { mutableStateOf(data.value.distanceToActivate.toString()) }
     var distanceIsErr by remember { mutableStateOf(false) }
     var distanceIsActive by remember { mutableStateOf(false) }
     val context = LocalContext.current
