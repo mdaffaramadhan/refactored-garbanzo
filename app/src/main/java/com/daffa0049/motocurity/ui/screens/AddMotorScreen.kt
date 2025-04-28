@@ -77,7 +77,6 @@ fun AddMotorScreen(navHostController: NavHostController, motorViewModel: MotorVi
                 it.plateNum,
                 it.trackCode,
                 onSuccess = {
-                    motorViewModel.addMotor(it.nameMotor, it.plateNum, it.plateNum)
                     Toast.makeText(context, "Create Successful!", Toast.LENGTH_SHORT).show()
                     navHostController.popBackStack()
                 },

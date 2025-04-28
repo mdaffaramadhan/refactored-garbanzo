@@ -306,6 +306,7 @@ fun RequestNotificationPermission(){
 @Composable
 fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewModel, navHostController: NavHostController){
     var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Button(
         onClick = {showDialog = true},
         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
@@ -319,8 +320,16 @@ fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewMo
             title = "Delete ${motorDataClass.nameMotor}",
             message = "Are you sure you want to delete this data?",
             onDelete = {
-                motorViewModel.deleteMotor(motorDataClass)
-                navHostController.navigateUp()
+                motorViewModel.deleteMotor(
+                    motorDataClass.id,
+                    onSuccess = {
+                        Toast.makeText(context, "Delete Successful!", Toast.LENGTH_SHORT).show()
+                        navHostController.navigateUp()
+                    },
+                    onError = {e->
+                        Toast.makeText(context, e, Toast.LENGTH_SHORT).show()
+                    }
+                )
                        },
             onDismiss = { showDialog = false }
         )
@@ -332,18 +341,8 @@ fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewMo
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun DetailMotorScreenPreview() {
-    val motorDataClass = MotorDataClass(
-        id = "",
-        nameMotor = "Vario Kabru",
-        plateNum = "W 7165 XXX",
-        userUid = "UtMFe95ENEYWnJvUvS6odEgKQEQ2",
-        picMotor = R.drawable.ic_launcher_background,
-        trackCode = "123",
-        isOn = true,
-        isConnected = true
-    )
     val motorViewModel = MotorViewModel()
-    motorViewModel.selectData(motorDataClass)
+    motorViewModel.selectedData
     MotocurityTheme {
         MotorDetailScreen(navHostController = rememberNavController(), motorViewModel)
     }

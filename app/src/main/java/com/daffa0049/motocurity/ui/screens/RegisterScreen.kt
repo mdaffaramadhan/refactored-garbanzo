@@ -151,7 +151,7 @@ fun RegisterScreen(navHostController: NavHostController){
                                     email,
                                     password,
                                     username,
-                                    onSuccess = {uid->
+                                    onSuccess = {
                                         Toast.makeText(context, "Register Successful", Toast.LENGTH_SHORT).show()
                                         navHostController.navigate(Screen.HomeScreen.route)
                                     },

@@ -106,7 +106,7 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
     val data = motorViewModel.dataDummy.collectAsState()
 
     LaunchedEffect(Unit) {
-        motorViewModel.getMotor(){e->
+        motorViewModel.getMotor{ e->
             Toast.makeText(context, e, Toast.LENGTH_SHORT).show()
         }
     }
