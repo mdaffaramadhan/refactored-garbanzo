@@ -13,26 +13,12 @@ class MotorViewModel:ViewModel() {
         emptyList<MotorDataClass>()
     )
     val dataDummy = _dataDummy.asStateFlow()
-//    private val _dataList = MutableStateFlow<List<MotorDataClass>>(
-//        listOf(
-//
-//        )
-//    )
-//    val dataList = _dataList.asStateFlow()
     private val _selectedData = MutableStateFlow(
         MotorDataClass()
     )
 
     val selectedData = _selectedData.asStateFlow()
 
-    fun addMotor(nameMotor: String, plateMotor: String, trackCode: String){
-        _dataDummy.value += MotorDataClass(
-            id = _dataDummy.value.size.toString(),
-            nameMotor = nameMotor,
-            plateNum = plateMotor,
-            trackCode = trackCode
-        )
-    }
     fun editMotor(
         id: String,
         nameMotor: String,
@@ -56,16 +42,6 @@ class MotorViewModel:ViewModel() {
             }.addOnFailureListener {e->
                 onError(e.message)
             }
-//        _dataDummy.value = _dataDummy.value.map {
-//            if(it.id == id) it.copy(
-//                nameMotor = nameMotor,
-//                plateNum = plateMotor,
-//                trackCode = trackCode
-//                ) else it
-//        }
-    }
-    fun deleteMotor(item: MotorDataClass){
-        _dataDummy.value -= item
     }
     fun switchActionForList(item: MotorDataClass){
         FirebaseFirestore.getInstance()
@@ -195,7 +171,22 @@ class MotorViewModel:ViewModel() {
             }
 
     }
-    fun selectData(item: MotorDataClass){
-        _selectedData.value = item
+    fun deleteMotor(
+        id: String,
+        onSuccess: () -> Unit,
+        onError: (String?) -> Unit
+    ){
+        val firebase = FirebaseFirestore.getInstance()
+        firebase.collection("motocurity")
+            .document("motors")
+            .collection("items")
+            .document(id)
+            .delete()
+            .addOnCompleteListener {
+                onSuccess()
+            }
+            .addOnFailureListener {e->
+                onError(e.message)
+            }
     }
 }

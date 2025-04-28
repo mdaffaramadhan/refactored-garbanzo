@@ -88,7 +88,7 @@ fun LoginScreen(navHostController: NavHostController){
                     )
                     Text(
                         modifier = Modifier.padding(4.dp),
-                        text = "Use your username and password to login",
+                        text = "Use your email and password to login",
                         style = MaterialTheme.typography.bodyLarge
                     )
                     OutlinedTextField(

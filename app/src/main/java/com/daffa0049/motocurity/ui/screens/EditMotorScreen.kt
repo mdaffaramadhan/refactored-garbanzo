@@ -33,8 +33,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.daffa0049.motocurity.R
-import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 
@@ -159,22 +157,6 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
                             Toast.makeText(context, "Edit Failed!", Toast.LENGTH_SHORT).show()
                         }
                     )
-
-//                    motorViewModel.selectData(
-//                        MotorDataClass(
-//                            id = data.value.id,
-//                            nameMotor = nameMotor,
-//                            plateNum = plateMotor,
-//                            battery = data.value.battery,
-//                            picMotor = data.value.picMotor,
-//                            trackCode = trackerCode,
-//                            isOn = data.value.isOn,
-//                            isConnected = data.value.isOn,
-//                            userUid = FirebaseAuth.getInstance().currentUser?.uid
-//                        )
-//                    )
-//                    Toast.makeText(context, "Edit Successful!", Toast.LENGTH_SHORT).show()
-
                 }
             }
         ) {
@@ -189,18 +171,8 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 fun EditMotorScreenPreview() {
-    val motorDataClass = MotorDataClass(
-        id = "",
-        nameMotor = "Vario Kabru",
-        plateNum = "W 7165 XXX",
-        userUid = "UtMFe95ENEYWnJvUvS6odEgKQEQ2",
-        picMotor = R.drawable.ic_launcher_background,
-        trackCode = "123",
-        isOn = true,
-        isConnected = true
-    )
     val motorViewModel = MotorViewModel()
-    motorViewModel.selectData(motorDataClass)
+    motorViewModel.selectedData
     MotocurityTheme {
         EditMotorScreen(navHostController = rememberNavController(), motorViewModel = motorViewModel)
     }
