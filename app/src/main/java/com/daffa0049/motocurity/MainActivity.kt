@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.daffa0049.motocurity.navigation.SetupNavGraph
+import com.daffa0049.motocurity.ui.screens.RequestBluetoothPermission
 import com.daffa0049.motocurity.ui.screens.RequestNotificationPermission
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.google.firebase.Firebase
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             MotocurityTheme {
                 RequestNotificationPermission()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    RequestBluetoothPermission()
+                }
                 SetupNavGraph()
             }
         }
