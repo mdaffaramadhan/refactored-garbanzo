@@ -7,7 +7,10 @@ import android.bluetooth.BluetoothSocket
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,29 +68,46 @@ class BluetoothViewModel:ViewModel() {
             }
         }
     }
-    suspend fun readFromSocket(
+    fun readFromSocket(
         socket: BluetoothSocket,
         output: (String) -> Unit
     ) {
-        try {
-            val inputStream = socket.inputStream
-            val buffer = ByteArray(1024)
-            var bytesRead: Int
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val inputStream = socket.inputStream
+                val buffer = ByteArray(1024)
+                var bytesRead: Int
 
-            while (socket.isConnected) {
-                bytesRead = inputStream.read(buffer)
-                if (bytesRead != -1) {
-                    val data = String(buffer, 0, bytesRead)
-                    output("data: $data")
-                } else {
-                    output("Socket closed or data read error.")
-                    break
+                while (socket.isConnected) {
+                    bytesRead = inputStream.read(buffer)
+                    if (bytesRead != -1) {
+                        val data = String(buffer, 0, bytesRead)
+                        output("data: $data")
+                    } else {
+                        output("Socket closed or data read error.")
+                        break
+                    }
+                    delay(1000)// now valid because function is suspend
                 }
-                delay(1000)// now valid because function is suspend
+            } catch (e: IOException) {
+                e.printStackTrace()
+                output("Error reading from socket: ${e.message}")
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            output("Error reading from socket: ${e.message}")
+        }
+    }
+    fun sendToBluetooth(socket: BluetoothSocket?, value: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (socket?.isConnected == true) {
+                    socket.outputStream.write((value.toString() + "\n").toByteArray())
+                    socket.outputStream.flush()
+                    Log.d("Bluetooth", "Sent: $value")
+                } else {
+                    Log.e("Bluetooth", "Socket is not connected")
+                }
+            } catch (e: IOException) {
+                Log.e("Bluetooth", "Error sending data: ${e.message}")
+            }
         }
     }
     fun startScan(bluetoothAdapter: BluetoothAdapter) {

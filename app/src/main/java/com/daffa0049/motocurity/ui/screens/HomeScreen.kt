@@ -2,18 +2,16 @@ package com.daffa0049.motocurity.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,10 +31,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.MotorViewModel
+import com.daffa0049.motocurity.viewModel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,7 +111,9 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
     }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if(data.value.isEmpty()){
@@ -138,8 +139,15 @@ fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMo
                     ListMotor(
                         motorDataClass = it,
                         onCLick = {
-                            motorViewModel.getMotorById(it.id)
-                            navHostController.navigate("motorDetailScreen")
+                            if(it.id.isBlank()){
+                                Toast.makeText(context, "Data not ready yet. Please try again.", Toast.LENGTH_SHORT).show()
+                                return@ListMotor
+                            }
+                            else{
+                                Log.d("test", "$it")
+                                motorViewModel.getMotorById(it.id)
+                                navHostController.navigate("motorDetailScreen")
+                            }
                         },
                         motorViewModel = motorViewModel
                         )
@@ -156,25 +164,46 @@ fun ListMotor(
     motorViewModel: MotorViewModel,
     onCLick: () -> Unit
 ){
+    val coordinate by motorViewModel.getCoordinate(motorDataClass.id).collectAsState(arrayOf("", ""))
+    val showNotification by motorViewModel.showNotification.collectAsState()
+    val context = LocalContext.current
+    val notificationViewModel = NotificationViewModel()
+//    LaunchedEffect(coordinate[0], coordinate[1]) {
+//        motorViewModel.updateLocation(
+//            latitude = coordinate[0].toDoubleOrNull()?:0.0,
+//            longitude = coordinate[1].toDoubleOrNull()?:0.0,
+//            thresholdMeters = motorDataClass.distanceToActivate.toFloat(),
+//            lastLon = motorDataClass.lastLon,
+//            lastLat = motorDataClass.lastLat
+//        )
+//    }
+//    if(showNotification){
+//        notificationViewModel.sendNotification(
+//            context = context,
+//            title = "YOUR "+motorDataClass.nameMotor+"'s ALARM IS ACTIVATED",
+//            content = "It seems that your "+motorDataClass.nameMotor+
+//                    " with plate "+motorDataClass.plateNum+" is moving ${motorDataClass.distanceToActivate} meters"
+//        )
+//        motorViewModel.resetNotification()
+//    }
+
     Card(
-        modifier = Modifier.padding(8.dp).clickable { onCLick() },
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { onCLick() },
 
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Box(
-                modifier = Modifier.size(76.dp)
-            ){
-                Image(
-                    painter = painterResource(motorDataClass.picMotor),
-                    contentDescription = "Tes"
-                )
-            }
             Column(
-                modifier = Modifier.weight(1f).padding(8.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(8.dp),
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
@@ -199,6 +228,7 @@ fun ListMotor(
                     style = MaterialTheme.typography.bodyMedium,
                     lineHeight = 4.sp
                 )
+                Text("latitude: ${coordinate[0]} - longitude: ${coordinate[1]}")
             }
             Switch(
                 checked = motorDataClass.isOn,

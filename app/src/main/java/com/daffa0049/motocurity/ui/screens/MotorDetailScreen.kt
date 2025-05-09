@@ -2,28 +2,21 @@ package com.daffa0049.motocurity.ui.screens
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
-import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.location.Location
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -47,34 +40,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.daffa0049.motocurity.R
 import com.daffa0049.motocurity.component.DeleteDialog
 import com.daffa0049.motocurity.component.dialog.BluetoothDialog
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.BluetoothViewModel
 import com.daffa0049.motocurity.viewModel.MotorViewModel
+import com.daffa0049.motocurity.viewModel.NotificationViewModel
 
 @RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,18 +123,13 @@ fun MotorDetailContent(
     var distanceIsErr by remember { mutableStateOf(false) }
     var distanceIsActive by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val latitude: Double?
-    val longitude: Double?
-    val lines = dataFromBt.lines()
-    val latLine = lines.find { it.contains("Latitude:") }
-    val lonLine = lines.find { it.contains("Longitude:") }
-    latitude = latLine?.substringAfter("Latitude:")?.trim()?.toDoubleOrNull()
-    longitude = lonLine?.substringAfter("Longitude:")?.trim()?.toDoubleOrNull()
-    var showNotification: Boolean by remember { mutableStateOf(false) }
-
+    val showNotification by motorViewModel.showNotification.collectAsState()
+    val coordinate by motorViewModel.getCoordinate(data.value.id).collectAsState(arrayOf("", ""))
 
     Column(
-        modifier = modifier.padding(16.dp).verticalScroll(rememberScrollState()),
+        modifier = modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -156,22 +138,14 @@ fun MotorDetailContent(
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
-        Text("latitude: $latitude - longitude: $longitude")
+        Text("latitude: ${coordinate[0]} - longitude: ${coordinate[1]}")
+        Text("Last latitude: ${data.value.lastLat} - longitude: ${data.value.lastLon}")
         Text(
             text = "${data.value.plateNum} ${data.value.battery} %"
         )
         Text(
             text = "Track Code: ${data.value.trackCode}"
         )
-        Box(
-            modifier = Modifier.size(125.dp)
-        ){
-            Image(
-                painter = painterResource(data.value.picMotor),
-                contentDescription = "Picture of user's motor",
-                contentScale = ContentScale.FillHeight
-            )
-        }
         Card(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -189,7 +163,19 @@ fun MotorDetailContent(
                 )
                 Switch(
                     checked = data.value.isOn,
-                    onCheckedChange = {motorViewModel.switchActionForDetail(data.value)}
+                    onCheckedChange = {
+                        motorViewModel.switchActionForDetail(
+                            data.value,
+                            latitude = coordinate[0].toDoubleOrNull()?:0.0,
+                            longitude = coordinate[1].toDoubleOrNull()?:0.0
+                            )
+                        if(data.value.isOn){
+                            blueToothTest.sendToBluetooth(socket, 0)
+                        }
+                        else{
+                            blueToothTest.sendToBluetooth(socket, 1)
+                        }
+                    }
                 )
             }
         }
@@ -277,105 +263,29 @@ fun MotorDetailContent(
 
         ShowDeleteDialog(motorDataClass = data.value, motorViewModel = motorViewModel, navHostController = navHostController)
 
-        LocationTracker(
-            longitude = longitude?:0.0,
-            latitude = latitude?:0.0,
-            distanceToActivate = distanceToActivate
-        ) {
-            showNotification = true
-        }
-        if(showNotification){
-            Notification(
-                motorDataClass = data.value
+        LaunchedEffect(coordinate[0], coordinate[1]) {
+            motorViewModel.updateLocation(
+                latitude = coordinate[0].toDoubleOrNull()?:0.0,
+                longitude = coordinate[1].toDoubleOrNull()?:0.0,
+                thresholdMeters = distanceToActivate.toFloat(),
+                lastLat = data.value.lastLat,
+                lastLon = data.value.lastLon
             )
-            showNotification = false
+        }
+        val notificationViewModel = NotificationViewModel()
+        if(showNotification && data.value.isOn){
+            notificationViewModel.sendNotification(
+                context = context,
+                title = "YOUR "+data.value.nameMotor+"'s ALARM IS ACTIVATED",
+                content = "It seems that your "+data.value.nameMotor+
+                        " with plate "+data.value.plateNum+" is moving ${data.value.distanceToActivate} meters"
+                )
+            motorViewModel.resetNotification()
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
-@Composable
-fun DebugNotificationButton(motorDataClass: MotorDataClass){
-    val context = LocalContext.current
-    var importance = NotificationManager.IMPORTANCE_MAX
 
-    Button(
-        onClick = {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-                val channelName = "Motor Alarm"
-                val descriptionText = "Notification if your motorcycle is moving for a few meters"
-                importance = NotificationManager.IMPORTANCE_HIGH
-                val mChannel = NotificationChannel("MOTOR_ALARM", channelName, importance)
-                mChannel.description = descriptionText
-                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.createNotificationChannel(mChannel)
-            }
-            val builder = NotificationCompat.Builder(context, "MOTOR_ALARM")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("YOUR "+motorDataClass.nameMotor+"'s ALARM IS ACTIVATED")
-                .setContentText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters")
-                .setStyle(NotificationCompat.BigTextStyle().bigText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters"))
-                .setPriority(importance)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
-            with(NotificationManagerCompat.from(context)){
-                if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    return@Button
-                }
-                notify(1001, builder.build())
-            }
-        },
-        colors = ButtonDefaults.buttonColors(Color.Red)
-    ) {
-        Text(
-            text = "NOTIF_DEBUG"
-
-        )
-    }
-}
-
-@Composable
-fun Notification(motorDataClass: MotorDataClass){
-    val context = LocalContext.current
-    var importance = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        NotificationManager.IMPORTANCE_MAX
-    } else {
-        @Suppress("DEPRECATION")
-        android.app.Notification.PRIORITY_MAX
-    }
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-        val channelName = "Motor Alarm"
-        val descriptionText = "Notification if your motorcycle is moving for a few meters"
-        importance = NotificationManager.IMPORTANCE_HIGH
-        val mChannel = NotificationChannel("MOTOR_ALARM", channelName, importance)
-        mChannel.description = descriptionText
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(mChannel)
-    }
-    val builder = NotificationCompat.Builder(context, "MOTOR_ALARM")
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentTitle("YOUR "+motorDataClass.nameMotor+"'s ALARM IS ACTIVATED")
-        .setContentText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters")
-        .setStyle(NotificationCompat.BigTextStyle().bigText("It seems that your "+motorDataClass.nameMotor+" with plate "+motorDataClass.plateNum+" is moving a few meters"))
-        .setPriority(importance)
-        .setCategory(NotificationCompat.CATEGORY_ALARM)
-        .setDefaults(NotificationCompat.DEFAULT_ALL)
-    with(NotificationManagerCompat.from(context)){
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.w("Notification", "Permission not granted for POST_NOTIFICATIONS")
-            return@with
-        }
-        notify(1001, builder.build())
-    }
-}
 @Composable
 fun RequestNotificationPermission(){
     val context = LocalContext.current
@@ -569,37 +479,6 @@ fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewMo
                        },
             onDismiss = { showDialog = false }
         )
-    }
-}
-
-@SuppressLint("AutoboxingStateCreation")
-@Composable
-fun LocationTracker(
-    latitude: Double,
-    longitude: Double,
-    distanceToActivate: String, // assumed to be in meters
-    onMoved: () -> Unit
-) {
-    var lastLat by remember { mutableDoubleStateOf(latitude) }
-    var lastLon by remember { mutableDoubleStateOf(longitude) }
-
-    val threshold = distanceToActivate.toFloatOrNull() ?: 0f
-
-    // Every time lat/lon changes, check the distance
-    LaunchedEffect(latitude, longitude) {
-        val results = FloatArray(1)
-        Location.distanceBetween(
-            lastLat, lastLon,
-            latitude, longitude,
-            results
-        )
-        val distanceMoved = results[0] // in meters
-
-        if (distanceMoved > threshold) {
-            onMoved()
-            lastLat = latitude
-            lastLon = longitude
-        }
     }
 }
 

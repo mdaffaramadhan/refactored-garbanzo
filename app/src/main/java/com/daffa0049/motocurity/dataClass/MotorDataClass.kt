@@ -14,5 +14,7 @@ data class MotorDataClass(
     var isOn: Boolean = true,
     var isConnected: Boolean = false,
     var distanceToActivate: Long = 10,
-    val coordinate: String = ""
+    val coordinate: String = "",
+    var lastLat: Double = 0.0,
+    var lastLon: Double = 0.0
 )
