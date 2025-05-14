@@ -14,12 +14,14 @@ import com.daffa0049.motocurity.ui.screens.LoginScreen
 import com.daffa0049.motocurity.ui.screens.MotorDetailScreen
 import com.daffa0049.motocurity.ui.screens.ProfileScreen
 import com.daffa0049.motocurity.ui.screens.RegisterScreen
+import com.daffa0049.motocurity.viewModel.BluetoothViewModel
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun SetupNavGraph(navHostController: NavHostController = rememberNavController()){
     val motorViewModel = MotorViewModel()
+//    val btViewModel = BluetoothViewModel()
     NavHost(
         navController = navHostController,
         startDestination = Screen.HomeScreen.route

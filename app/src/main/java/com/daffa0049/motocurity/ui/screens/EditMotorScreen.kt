@@ -71,7 +71,7 @@ fun EditMotorScreen(navHostController: NavHostController, motorViewModel: MotorV
     ) {
             innerPadding ->
         EditMotorContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel){
-            navHostController.navigateUp()
+            navHostController.popBackStack()
         }
     }
 }
@@ -82,11 +82,11 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
 
     var nameMotor by remember { mutableStateOf(data.value.nameMotor) }
     var plateMotor by remember { mutableStateOf(data.value.plateNum) }
-    var trackerCode by remember { mutableStateOf(data.value.trackCode) }
+//    var trackerCode by remember { mutableStateOf(data.value.trackCode) }
 
     var nameMotorIsErr by remember { mutableStateOf(false) }
     var plateMotorIsErr by remember { mutableStateOf(false) }
-    var trackCodeIsErr by remember { mutableStateOf(false) }
+//    var trackCodeIsErr by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     Column(
@@ -121,33 +121,33 @@ fun EditMotorContent(modifier: Modifier = Modifier, motorViewModel: MotorViewMod
                 imeAction = ImeAction.Next
             )
         )
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth(),
-            value = trackerCode,
-            onValueChange = {trackerCode = it},
-            label = { Text(text = "Tracker Code") },
-            isError = trackCodeIsErr,
-            supportingText = {
-                ErrorMessage(trackCodeIsErr)
-            },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
-            )
-        )
+//        OutlinedTextField(
+//            modifier = Modifier
+//                .fillMaxWidth(),
+//            value = trackerCode,
+//            onValueChange = {trackerCode = it},
+//            label = { Text(text = "Tracker Code") },
+//            isError = trackCodeIsErr,
+//            supportingText = {
+//                ErrorMessage(trackCodeIsErr)
+//            },
+//            keyboardOptions = KeyboardOptions(
+//                imeAction = ImeAction.Done
+//            )
+//        )
 
         Button(
             modifier = Modifier.padding(8.dp),
             onClick = {
                 nameMotorIsErr = nameMotor.isBlank()
                 plateMotorIsErr = plateMotor.isBlank()
-                trackCodeIsErr = trackerCode.isBlank()
-                if(!nameMotorIsErr && !plateMotorIsErr && !trackCodeIsErr){
+//                trackCodeIsErr = trackerCode.isBlank()
+                if(!nameMotorIsErr && !plateMotorIsErr){
                     motorViewModel.editMotor(
                         id = data.value.id,
                         nameMotor = nameMotor,
                         plateMotor = plateMotor,
-                        trackCode = trackerCode,
+                        trackCode = "123",
                         onSuccess = {
                             motorViewModel.getMotorById(id = data.value.id)
                             Toast.makeText(context, "Edit Successful!", Toast.LENGTH_SHORT).show()

@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothSocket
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -49,16 +48,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.component.DeleteDialog
 import com.daffa0049.motocurity.component.dialog.BluetoothDialog
 import com.daffa0049.motocurity.dataClass.MotorDataClass
-import com.daffa0049.motocurity.ui.theme.MotocurityTheme
 import com.daffa0049.motocurity.viewModel.BluetoothViewModel
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 import com.daffa0049.motocurity.viewModel.NotificationViewModel
@@ -66,7 +62,10 @@ import com.daffa0049.motocurity.viewModel.NotificationViewModel
 @RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MotorDetailScreen(navHostController: NavHostController, motorViewModel: MotorViewModel){
+fun MotorDetailScreen(
+    navHostController: NavHostController,
+    motorViewModel: MotorViewModel
+    ){
     Scaffold(
         topBar = {
             TopAppBar(
@@ -124,7 +123,17 @@ fun MotorDetailContent(
     var distanceIsActive by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val showNotification by motorViewModel.showNotification.collectAsState()
-    val coordinate by motorViewModel.getCoordinate(data.value.id).collectAsState(arrayOf("", ""))
+    val nullableCord  by blueToothTest.processBluetoothData(dataFromBt).collectAsState()
+    var coordinate: Pair<Double, Double> by remember { mutableStateOf(Pair(0.0, 0.0)) }
+    val nullableMeter by blueToothTest.getMovedMeter(dataFromBt).collectAsState()
+    var movedMeter by remember { mutableStateOf("") }
+    if(nullableCord.first != 0.0 && nullableCord.second != 0.0){
+        coordinate = nullableCord
+    }
+    if(nullableMeter.isNotBlank()){
+        movedMeter = nullableMeter
+    }
+
 
     Column(
         modifier = modifier
@@ -138,13 +147,13 @@ fun MotorDetailContent(
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
         )
-        Text("latitude: ${coordinate[0]} - longitude: ${coordinate[1]}")
-        Text("Last latitude: ${data.value.lastLat} - longitude: ${data.value.lastLon}")
+        if(movedMeter.isNotBlank() && !distanceIsActive && (movedMeter.toDoubleOrNull()
+                ?: 0.0) != 0.0
+        ){
+            Text(text = "Vehicle moved away for $movedMeter M from the set position")
+        }
         Text(
             text = "${data.value.plateNum} ${data.value.battery} %"
-        )
-        Text(
-            text = "Track Code: ${data.value.trackCode}"
         )
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -164,10 +173,11 @@ fun MotorDetailContent(
                 Switch(
                     checked = data.value.isOn,
                     onCheckedChange = {
+                        motorViewModel.resetNotification()
                         motorViewModel.switchActionForDetail(
                             data.value,
-                            latitude = coordinate[0].toDoubleOrNull()?:0.0,
-                            longitude = coordinate[1].toDoubleOrNull()?:0.0
+                            latitude = coordinate.first,
+                            longitude = coordinate.second
                             )
                         if(data.value.isOn){
                             blueToothTest.sendToBluetooth(socket, 0)
@@ -263,10 +273,10 @@ fun MotorDetailContent(
 
         ShowDeleteDialog(motorDataClass = data.value, motorViewModel = motorViewModel, navHostController = navHostController)
 
-        LaunchedEffect(coordinate[0], coordinate[1]) {
+        LaunchedEffect(coordinate.first, coordinate.second) {
             motorViewModel.updateLocation(
-                latitude = coordinate[0].toDoubleOrNull()?:0.0,
-                longitude = coordinate[1].toDoubleOrNull()?:0.0,
+                latitude = coordinate.first,
+                longitude = coordinate.second,
                 thresholdMeters = distanceToActivate.toFloat(),
                 lastLat = data.value.lastLat,
                 lastLon = data.value.lastLon
@@ -280,6 +290,7 @@ fun MotorDetailContent(
                 content = "It seems that your "+data.value.nameMotor+
                         " with plate "+data.value.plateNum+" is moving ${data.value.distanceToActivate} meters"
                 )
+            motorViewModel.updateLastLatLonDetailMotor(arrayOf(coordinate.first.toString(), coordinate.second.toString()))
             motorViewModel.resetNotification()
         }
     }
@@ -482,14 +493,14 @@ fun ShowDeleteDialog(motorDataClass: MotorDataClass, motorViewModel: MotorViewMo
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
-@Preview(showBackground = true)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-@Composable
-fun DetailMotorScreenPreview() {
-    val motorViewModel = MotorViewModel()
-    motorViewModel.selectedData
-    MotocurityTheme {
-        MotorDetailScreen(navHostController = rememberNavController(), motorViewModel)
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.N)
+//@Preview(showBackground = true)
+//@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+//@Composable
+//fun DetailMotorScreenPreview() {
+//    val motorViewModel = MotorViewModel()
+//    motorViewModel.selectedData
+//    MotocurityTheme {
+//        MotorDetailScreen(navHostController = rememberNavController(), motorViewModel)
+//    }
+//}

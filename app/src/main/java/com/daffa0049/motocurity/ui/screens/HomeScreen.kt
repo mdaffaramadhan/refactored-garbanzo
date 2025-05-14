@@ -1,7 +1,7 @@
 package com.daffa0049.motocurity.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.res.Configuration
+import android.bluetooth.BluetoothSocket
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -32,17 +32,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.daffa0049.motocurity.dataClass.MotorDataClass
-import com.daffa0049.motocurity.ui.theme.MotocurityTheme
+import com.daffa0049.motocurity.viewModel.BluetoothViewModel
 import com.daffa0049.motocurity.viewModel.MotorViewModel
 import com.daffa0049.motocurity.viewModel.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -92,16 +93,22 @@ fun HomeScreen(navHostController: NavHostController, motorViewModel: MotorViewMo
             }
         }
     ){innerPadding ->
-        HomeScreenContent(modifier = Modifier.padding(innerPadding), motorViewModel = motorViewModel, navHostController = navHostController)
+        HomeScreenContent(
+            modifier = Modifier.padding(innerPadding),
+            motorViewModel = motorViewModel,
+            navHostController = navHostController
+            )
     }
 }
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun HomeScreenContent(modifier: Modifier = Modifier, motorViewModel: MotorViewModel, navHostController: NavHostController){
-
+fun HomeScreenContent(
+    modifier: Modifier = Modifier,
+    motorViewModel: MotorViewModel,
+    navHostController: NavHostController
+){
     val context = LocalContext.current
-
     val data = motorViewModel.dataDummy.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -164,28 +171,31 @@ fun ListMotor(
     motorViewModel: MotorViewModel,
     onCLick: () -> Unit
 ){
-    val coordinate by motorViewModel.getCoordinate(motorDataClass.id).collectAsState(arrayOf("", ""))
+    val coordinate by motorViewModel.getCoordinate(motorDataClass.id).collectAsState()
     val showNotification by motorViewModel.showNotification.collectAsState()
     val context = LocalContext.current
     val notificationViewModel = NotificationViewModel()
-//    LaunchedEffect(coordinate[0], coordinate[1]) {
-//        motorViewModel.updateLocation(
-//            latitude = coordinate[0].toDoubleOrNull()?:0.0,
-//            longitude = coordinate[1].toDoubleOrNull()?:0.0,
-//            thresholdMeters = motorDataClass.distanceToActivate.toFloat(),
-//            lastLon = motorDataClass.lastLon,
-//            lastLat = motorDataClass.lastLat
-//        )
-//    }
-//    if(showNotification){
-//        notificationViewModel.sendNotification(
-//            context = context,
-//            title = "YOUR "+motorDataClass.nameMotor+"'s ALARM IS ACTIVATED",
-//            content = "It seems that your "+motorDataClass.nameMotor+
-//                    " with plate "+motorDataClass.plateNum+" is moving ${motorDataClass.distanceToActivate} meters"
-//        )
-//        motorViewModel.resetNotification()
-//    }
+    LaunchedEffect(coordinate) {
+        motorViewModel.updateLocation(
+            latitude = coordinate.first,
+            longitude =  coordinate.second,
+            thresholdMeters = motorDataClass.distanceToActivate.toFloat(),
+            lastLon = motorDataClass.lastLon,
+            lastLat = motorDataClass.lastLat
+        )
+    }
+    if(showNotification){
+        notificationViewModel.sendNotification(
+            context = context,
+            title = "YOUR "+motorDataClass.nameMotor+"'s ALARM IS ACTIVATED",
+            content = "It seems that your "+motorDataClass.nameMotor+
+                    " with plate "+motorDataClass.plateNum+" is moving ${motorDataClass.distanceToActivate} meters"
+        )
+        motorDataClass.lastLon = coordinate.second
+        motorDataClass.lastLat = coordinate.first
+        motorViewModel.updateLastLatLonDetailMotor(arrayOf(coordinate.first.toString(), coordinate.second.toString()))
+        motorViewModel.resetNotification()
+    }
 
     Card(
         modifier = Modifier
@@ -219,16 +229,10 @@ fun ListMotor(
                     lineHeight = 4.sp
                 )
                 Text(
-                    text = if(motorDataClass.isConnected) "Connected" else "Not Connected",
-                    style = MaterialTheme.typography.bodyMedium,
-                    lineHeight = 4.sp
-                )
-                Text(
                     text = motorDataClass.battery.toString()+"%",
                     style = MaterialTheme.typography.bodyMedium,
                     lineHeight = 4.sp
                 )
-                Text("latitude: ${coordinate[0]} - longitude: ${coordinate[1]}")
             }
             Switch(
                 checked = motorDataClass.isOn,
@@ -237,12 +241,12 @@ fun ListMotor(
         }
     }
 }
-
-@Preview(showBackground = true)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    MotocurityTheme {
-        HomeScreen(navHostController = rememberNavController(), MotorViewModel())
-    }
-}
+//
+//@Preview(showBackground = true)
+//@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+//@Composable
+//fun HomeScreenPreview() {
+//    MotocurityTheme {
+//        HomeScreen(navHostController = rememberNavController(), MotorViewModel())
+//    }
+//}

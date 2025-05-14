@@ -10,21 +10,27 @@ import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.util.UUID
-import kotlinx.coroutines.delay
 
 @SuppressLint("MissingPermission")
 class BluetoothViewModel:ViewModel() {
     private val _devices = MutableStateFlow<Set<BluetoothDevice>>(emptySet())
     val devices: StateFlow<Set<BluetoothDevice>> = _devices
+
+    private var latitude: String? = null
+    private var longitude: String? = null
+
+    private val _id = MutableStateFlow("")
+    val id = _id.asStateFlow()
 
     @Suppress("DEPRECATION")
     val receiver = object : BroadcastReceiver() {
@@ -42,6 +48,10 @@ class BluetoothViewModel:ViewModel() {
                 }
             }
         }
+    }
+
+    fun updateId(id: String){
+        _id.value = id
     }
 
     fun connectBluetooth(
@@ -124,5 +134,31 @@ class BluetoothViewModel:ViewModel() {
 
     fun updateBondedDevices(bluetoothAdapter: BluetoothAdapter?) {
         _devices.value = bluetoothAdapter?.bondedDevices?: emptySet()
+    }
+
+    fun processBluetoothData(raw: String): StateFlow<Pair<Double, Double>> {
+        val latRegex = Regex("Lat:\\s*(-?\\d+\\.\\d+)")
+        val lngRegex = Regex("Lng:\\s*(-?\\d+\\.\\d+)")
+
+        latRegex.find(raw)?.let {
+            latitude = it.groupValues[1]
+        }
+
+        lngRegex.find(raw)?.let {
+            longitude = it.groupValues[1]
+        }
+
+        val latValue = latitude?.toDoubleOrNull()?:0.0
+        val lonValue = longitude?.toDoubleOrNull()?:0.0
+
+        return MutableStateFlow(latValue to lonValue)
+    }
+    fun getMovedMeter(raw: String): StateFlow<String>{
+        var movedMeter = ""
+        val movedMeterRemove = Regex("Jarak ke titik awal:\\s*(-?\\d+\\.\\d+)")
+        movedMeterRemove.find(raw)?.let {
+            movedMeter = it.groupValues[1]
+        }
+        return MutableStateFlow(movedMeter)
     }
 }

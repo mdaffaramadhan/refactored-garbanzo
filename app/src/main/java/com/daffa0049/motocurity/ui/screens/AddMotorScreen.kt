@@ -75,7 +75,7 @@ fun AddMotorScreen(navHostController: NavHostController, motorViewModel: MotorVi
             motorViewModel.createMotor(
                 it.nameMotor,
                 it.plateNum,
-                it.trackCode,
+                "123",
                 onSuccess = {
                     Toast.makeText(context, "Create Successful!", Toast.LENGTH_SHORT).show()
                     navHostController.popBackStack()
@@ -95,10 +95,9 @@ fun AddMotorContent(
 ){
     var nameMotor by remember { mutableStateOf("") }
     var plateMotor by remember { mutableStateOf("") }
-    var trackerCode by remember { mutableStateOf("") }
+//    var trackerCode by remember { mutableStateOf("") }
     var nameMotorIsErr by remember { mutableStateOf(false) }
     var plateMotorIsErr by remember { mutableStateOf(false) }
-    var trackerCodeIsErr by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -132,31 +131,25 @@ fun AddMotorContent(
                 imeAction = ImeAction.Next
             )
         )
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth(),
-            value = trackerCode,
-            onValueChange = {trackerCode = it},
-            label = { Text(text = "Tracker Code") },
-            isError = trackerCodeIsErr,
-            supportingText = {
-                ErrorMessage(trackerCodeIsErr)
-            },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
-            )
-        )
+//        OutlinedTextField(
+//            modifier = Modifier
+//                .fillMaxWidth(),
+//            value = trackerCode,
+//            onValueChange = {trackerCode = it},
+//            label = { Text(text = "Tracker Code") },
+//            keyboardOptions = KeyboardOptions(
+//                imeAction = ImeAction.Done
+//            )
+//        )
         Button(
             modifier = Modifier.padding(8.dp),
             onClick = {
                 nameMotorIsErr = nameMotor.isBlank()
                 plateMotorIsErr = plateMotor.isBlank()
-                trackerCodeIsErr = trackerCode.isBlank()
-                if(!nameMotorIsErr && !plateMotorIsErr && !trackerCodeIsErr){
+                if(!nameMotorIsErr && !plateMotorIsErr){
                     val dataMotor = MotorDataClass(
                         nameMotor = nameMotor,
-                        plateNum = plateMotor,
-                        trackCode = trackerCode
+                        plateNum = plateMotor
                     )
                     onCLick(dataMotor)
                 }

@@ -7,12 +7,9 @@ import com.daffa0049.motocurity.R
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.callbackFlow
 
 class MotorViewModel:ViewModel() {
     private val _dataDummy = MutableStateFlow(
@@ -27,6 +24,49 @@ class MotorViewModel:ViewModel() {
 
     private val _showNotification = MutableStateFlow(false)
     val showNotification: StateFlow<Boolean> = _showNotification
+
+    fun updateLastLatLonDetailMotor(coordinate: Array<String>){
+        val lastLat = coordinate[0].toDoubleOrNull()?:0.0
+        val lastLon = coordinate[1].toDoubleOrNull()?:0.0
+        _selectedData.value = _selectedData.value.copy(
+            lastLat = coordinate[0].toDoubleOrNull()?:0.0,
+            lastLon = coordinate[1].toDoubleOrNull()?:0.0
+        )
+        upLastLatLonDb(_selectedData.value.id, latitude = lastLat, longitude = lastLon)
+    }
+
+    fun updateLastLatLonHome(motor: MotorDataClass, coordinate: Array<String>){
+        _dataDummy.value = _dataDummy.value.map {
+            if(it == motor) {
+                it.copy(
+                    lastLon = coordinate[1].toDoubleOrNull()?:0.0,
+                    lastLat = coordinate[0].toDoubleOrNull()?:0.0
+                )
+            }
+            else{
+                it
+            }
+        }
+    }
+
+    private fun upLastLatLonDb(id: String, latitude: Double, longitude: Double){
+        FirebaseFirestore.getInstance()
+            .collection("motocurity")
+            .document("motors")
+            .collection("items")
+            .document(id)
+            .update(
+                mapOf(
+                    "lastLat" to latitude,
+                    "lastLon" to longitude,
+                )
+            ).addOnCompleteListener {
+                _selectedData.value = _selectedData.value.copy(
+                    lastLat = latitude,
+                    lastLon = longitude
+                )
+            }
+    }
 
     fun updateLocation(
         latitude: Double,
@@ -132,8 +172,8 @@ class MotorViewModel:ViewModel() {
             ).addOnCompleteListener {
                 _selectedData.value = _selectedData.value.copy(
                     isOn = !item.isOn,
-                    lastLat = latitude?: 0.0,
-                    lastLon = longitude?: 0.0
+                    lastLat = latitude,
+                    lastLon = longitude
                 )
                 switchActionForList(item)
             }
@@ -216,42 +256,46 @@ class MotorViewModel:ViewModel() {
             }
     }
 
-    fun getCoordinate(id: String): Flow<Array<String>> = callbackFlow {
-        val firebase = FirebaseFirestore.getInstance()
-        val docRef = firebase.collection("motocurity")
-            .document("motors")
-            .collection("items")
-            .document(id)
+    private val coordinateFlows = mutableMapOf<String, MutableStateFlow<Pair<Double, Double>>>()
 
-        val listener = docRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                trySend(arrayOf("", ""))
-                close(error)
-                return@addSnapshotListener
+    fun getCoordinate(id: String): StateFlow<Pair<Double, Double>> {
+        if (id.isBlank()) {
+            Log.e("getCoordinate", "ID is blank, returning default coordinate")
+            return MutableStateFlow(0.0 to 0.0) // Prevent crash
+        }
+        return coordinateFlows.getOrPut(id) {
+            val flow = MutableStateFlow(0.0 to 0.0)
+
+            val firebase = FirebaseFirestore.getInstance()
+            val docRef = firebase.collection("motocurity")
+                .document("motors")
+                .collection("items")
+                .document(id)
+
+            docRef.addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+
+                val coordinate = snapshot.getString("coordinate") ?: ""
+                val normalized = coordinate
+                    .replace(Regex("[\u2010-\u2015\u2212\uFE63\uFF0D]"), "-")
+                    .filter { it.code in 32..126 || it == '\n' }
+                val lines = normalized.lines()
+
+                val lat = lines.find { it.contains("Latitude:") }
+                    ?.substringAfter("Latitude:")
+                    ?.trim()
+                    ?.toDoubleOrNull() ?: 0.0
+
+                val lon = lines.find { it.contains("Longitude:") }
+                    ?.substringAfter("Longitude:")
+                    ?.trim()
+                    ?.toDoubleOrNull() ?: 0.0
+
+                flow.value = lat to lon
             }
 
-            val coordinate = snapshot?.getString("coordinate") ?: ""
-            val normalized = coordinate
-                .replace(Regex("[\u2010-\u2015\u2212\uFE63\uFF0D]"), "-") // Replace various dashes with ASCII '-'
-                .filter { it.code in 32..126 || it == '\n' } // Keep ASCII and newline
-            val lines = normalized.lines()
-
-            // Extract latitude and longitude
-            val latitude = lines.find { it.contains("Latitude:") }
-                ?.substringAfter("Latitude:")
-                ?.trim()
-                ?.toDoubleOrNull()
-
-            val longitude = lines.find { it.contains("Longitude:") }
-                ?.substringAfter("Longitude:")
-                ?.trim()
-                ?.toDoubleOrNull()
-
-            trySend(arrayOf(latitude.toString(), longitude.toString()))
-
+            flow
         }
-
-        awaitClose { listener.remove() } // Removes the listener when the flow is closed
     }
 
     fun getMotorById(id: String){
