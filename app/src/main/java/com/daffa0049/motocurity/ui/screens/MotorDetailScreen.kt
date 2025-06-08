@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import com.daffa0049.motocurity.component.DeleteDialog
+import com.daffa0049.motocurity.component.dialog.DeleteDialog
 import com.daffa0049.motocurity.component.dialog.BluetoothDialog
 import com.daffa0049.motocurity.dataClass.MotorDataClass
 import com.daffa0049.motocurity.viewModel.BluetoothViewModel
@@ -105,7 +105,7 @@ fun MotorDetailScreen(
     }
 }
 
-@SuppressLint("MutableCollectionMutableState")
+@SuppressLint("MutableCollectionMutableState", "ViewModelConstructorInComposable")
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun MotorDetailContent(

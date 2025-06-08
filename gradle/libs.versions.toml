@@ -12,6 +12,7 @@ composeBom = "2025.04.01"
 navCompose = "2.8.9"
 google-services = "4.4.2"
 firebase-bom = "33.13.0"
+navigationComposeJvmstubs = "2.9.0"
 
 [libraries]
 #noinspection SimilarGradleDependency
@@ -36,6 +37,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-database = { module = "com.google.firebase:firebase-database-ktx" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
 firebase-auth = {module = "com.google.firebase:firebase-auth-ktx"}
+androidx-navigation-compose-jvmstubs = { group = "androidx.navigation", name = "navigation-compose-jvmstubs", version.ref = "navigationComposeJvmstubs" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

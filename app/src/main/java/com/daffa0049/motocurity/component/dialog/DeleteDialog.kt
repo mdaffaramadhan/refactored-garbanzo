@@ -1,4 +1,4 @@
-package com.daffa0049.motocurity.component
+package com.daffa0049.motocurity.component.dialog
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement

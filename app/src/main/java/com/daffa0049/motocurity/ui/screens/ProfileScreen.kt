@@ -89,7 +89,7 @@ fun ProfileScreen(navHostController: NavHostController){
 fun ProfileContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
     val auth = FirebaseAuth.getInstance()
     var username by remember { mutableStateOf(auth.currentUser?.displayName ?: "") }
-    var email by remember { mutableStateOf(auth.currentUser?.email ?: "") }
+    var usernameIsEmpty by remember { mutableStateOf(false) }
     var isEdit by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.padding(16.dp).fillMaxSize(),
@@ -109,23 +109,24 @@ fun ProfileContent(modifier: Modifier = Modifier, onCLick: () -> Unit){
             value = username,
             onValueChange = {username = it},
             label = { Text(text = "Username") },
-            enabled = isEdit
-        )
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth(),
-            value = email,
-            onValueChange = {email = it},
-            label = { Text(text = "Email") },
-            enabled = isEdit
+            enabled = isEdit,
+            isError = usernameIsEmpty,
+            supportingText = {
+                ErrorMessage(
+                    isError = usernameIsEmpty
+                )
+            }
         )
         if(isEdit){
             Button(
                 modifier = Modifier.padding(8.dp),
                 onClick = {
-                    AuthViewModel().updateUsername(username)
-                    isEdit = false
-                          },
+                    usernameIsEmpty = username.isBlank()
+                    if(!usernameIsEmpty){
+                        AuthViewModel().updateUsername(username)
+                        isEdit = false
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
             ) {
                 Text(
